@@ -7,5 +7,5 @@ from hub.models import Tag
 
 @receiver(post_save, sender=Tag)
 def get_tag_info(sender, instance=None, created=False, **kwargs):
-    if created:
+    if created and instance.type in (Tag.COPYRIGHT, Tag.ARTIST):
         update_tags_info_task.delay(instance.pk)

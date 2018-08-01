@@ -1,10 +1,10 @@
-from django_filters import rest_framework as filters
 from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from api import serializers
+from api.filters import TagFilter, PostFilter
 from bot.services.sakugabooru_service import SakugabooruService
 from hub.models import Post, Tag, TagSnapshot, Attribute
 
@@ -37,19 +37,6 @@ class TagSnapshotViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == 'retrieve':
             return serializers.DetailTagSnapshotSerializer
         return serializers.BasicTagSnapshotSerializer
-
-
-class TagFilter(filters.FilterSet):
-    name = filters.CharFilter(method='names_filter')
-
-    class Meta:
-        model = Tag
-        fields = ('name', 'type')
-
-    def names_filter(self, queryset, name, value):
-        return queryset.filter(**{
-            '{}__in'.format(name): value.split(','),
-        })
 
 
 class TagViewSet(viewsets.GenericViewSet,
@@ -107,6 +94,7 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
     """
 
     queryset = Post.objects.order_by('-id')
+    filterset_class = PostFilter
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
