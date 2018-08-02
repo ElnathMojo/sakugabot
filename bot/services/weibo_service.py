@@ -94,7 +94,12 @@ class WeiboService(object):
         :return: weibo object
         :raise:RuntimeError [SKIP] or [RETRY] //or [BLOCK]
         """
-        if not (os.path.isfile(image_path) and os.path.getsize(image_path) > 0):
+        try:
+            size = os.path.getsize(image_path)
+            if not size:
+                raise FileNotFoundError
+            logger.info("Image is about to be uploaded. Path: [{}]; Size: [{}]".format(image_path, size))
+        except FileNotFoundError:
             logger.warning("Image invalid. Path: [{}]".format(image_path))
             raise RuntimeError("[SKIP]")
         text = self.generate_weibo_content(post)
@@ -113,7 +118,7 @@ class WeiboService(object):
                     logger.error("Post id[{}]: {}; Skip.".format(post.id, str(e)))
                     raise RuntimeError("[SKIP]")
                 elif any(x in str(e) for x in ['20016', '20017', '20019']):
-                    logger.error("Post id[{}]: {}; Waite and Retry.".format(post.id, str(e)))
+                    logger.error("Post id[{}]: {}; Wait and Retry.".format(post.id, str(e)))
                     raise RuntimeError("[RETRY]")
                 else:
                     logger.fatal("Post id[{}]: {}; Unknown Error.".format(post.id, str(e)))
