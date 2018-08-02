@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from api import serializers
-from api.filters import TagFilter, PostFilter
+from api import filters
 from bot.services.sakugabooru_service import SakugabooruService
 from hub.models import Post, Tag, TagSnapshot, Attribute
 
@@ -12,6 +12,7 @@ from hub.models import Post, Tag, TagSnapshot, Attribute
 class AttributeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Attribute.objects.all()
     serializer_class = serializers.AttributeSerializer
+    filterset_class = filters.AttributeFilter
 
     def get_queryset(self):
         if self.action == 'list':
@@ -49,7 +50,7 @@ class TagViewSet(viewsets.GenericViewSet,
     queryset = Tag.objects.exclude(deletion_flag=True)
     serializer_class = serializers.BasicTagSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-    filterset_class = TagFilter
+    filterset_class = filters.TagFilter
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -94,7 +95,7 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
     """
 
     queryset = Post.objects.order_by('-id')
-    filterset_class = PostFilter
+    filterset_class = filters.PostFilter
 
     def get_serializer_class(self):
         if self.action == 'retrieve':

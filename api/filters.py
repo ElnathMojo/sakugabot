@@ -1,6 +1,18 @@
 from django_filters import rest_framework as filters
 
-from hub.models import Post, Tag
+from hub.models import Post, Tag, Attribute
+
+
+class NumArrayFilter(filters.BaseCSVFilter, filters.NumberFilter):
+    pass
+
+
+class AttributeFilter(filters.FilterSet):
+    related_types = NumArrayFilter(lookup_expr='contains')
+
+    class Meta:
+        model = Attribute
+        fields = ('related_types',)
 
 
 class CharInFilter(filters.BaseInFilter, filters.CharFilter):

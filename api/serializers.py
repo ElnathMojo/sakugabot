@@ -35,14 +35,6 @@ class ModifyTagSerializer(serializers.ModelSerializer):
                                                                                              attr.get_type_display()))
         return value
 
-    # def validate(self, data):
-    #     detail = data.get('detail', dict())
-    #     data['order_of_keys'] = Tag.gen_order_of_keys(
-    #         data.get('order_of_keys', list()),
-    #         detail.keys()
-    #     )
-    #     return data
-
     def update(self, instance, validated_data):
         raise_errors_on_nested_writes('update', self, validated_data)
         info = model_meta.get_field_info(instance)
@@ -127,10 +119,15 @@ class BasicAttributeSerializer(serializers.ModelSerializer):
 
 
 class BasicPostSerializer(serializers.ModelSerializer):
+    weibo_image_url = serializers.SerializerMethodField()
     class Meta:
         model = Post
-        fields = ('id', 'source', 'file_size', 'uploader', 'is_shown', 'is_pending', 'score', 'rating', 'tags', 'weibo',
-                  'update_time', 'preview_url')
+        fields = ('id', 'source', 'file_size', 'uploader', 'is_shown', 'is_pending', 'score', 'rating', 'tags',
+                  'weibo_image_url', 'update_time', 'preview_url', 'media_url', 'sakugabooru_url')
+
+    def get_weibo_image_url(self, obj):
+        if obj.weibo:
+            return obj.weibo.img_url
 
 
 class WeiboSerializer(serializers.ModelSerializer):
@@ -141,6 +138,7 @@ class WeiboSerializer(serializers.ModelSerializer):
 
 class DetailPostSerializer(serializers.ModelSerializer):
     tags = BasicTagSerializer(many=True)
+    weibo = WeiboSerializer()
 
     class Meta:
         model = Post
