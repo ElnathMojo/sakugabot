@@ -2,9 +2,11 @@ from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-from api import serializers
 from api import filters
+from api import serializers
+from api import throttles
 from bot.services.sakugabooru_service import SakugabooruService
 from hub.models import Post, Tag, TagSnapshot, Attribute
 
@@ -13,6 +15,7 @@ class AttributeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Attribute.objects.all()
     serializer_class = serializers.AttributeSerializer
     filterset_class = filters.AttributeFilter
+    pagination_class = None
 
     def get_queryset(self):
         if self.action == 'list':
@@ -28,11 +31,6 @@ class TagSnapshotViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = TagSnapshot.objects.order_by('-update_time')
     filterset_fields = ('tag',)
-
-    def filter_queryset(self, queryset):
-        if not self.request.query_params.get("tag", None):
-            return queryset.filter(_user__isnull=False)
-        return super().filter_queryset(queryset)
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -85,7 +83,7 @@ class TagViewSet(viewsets.GenericViewSet,
         content = tag.snapshots.get(id=serializer.validated_data["id"]).content
         tag.detail = content
         tag.order_of_keys = [k[0] for k in content.items()]
-        tag.save_tag(user=request.user)
+        tag.save(editor=request.user)
         return Response(serializers.DetailTagSerializer(tag).data)
 
 
@@ -126,3 +124,7 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(data={"detail": "id must be an integer."}, status=status.HTTP_406_NOT_ACCEPTABLE)
         post = SakugabooruService().update_post(id)
         return Response(self.get_serializer(post).data)
+
+
+class TokenObtainPairViewWithThrottle(TokenObtainPairView):
+    throttle_classes = [throttles.AuthThrottle]

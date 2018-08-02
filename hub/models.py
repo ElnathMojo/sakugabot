@@ -123,17 +123,17 @@ class Tag(models.Model):
                 old_keys.remove(new_key)
             else:
                 add.append(new_key)
-        note = ""
+        notes = []
         if change:
-            note += "Change: {};".format(", ".join(change))
+            notes.append("Change:{}".format(",".join(change)))
         if add:
-            note += "Add: {};".format(", ".join(add))
+            notes.append("Add:{}".format(",".join(add)))
         if old_keys:
-            note += "Delete: {};".format(", ".join(old_keys))
-        if not note:
-            note += "Order changed."
+            notes.append("Delete:{}".format(",".join(old_keys)))
+        if not notes:
+            notes.append("Order changed")
 
-        return note
+        return ";".join(notes)
 
     def _create_snapshot(self, user, hash, content):
         snapshot = self.snapshot_latest

@@ -18,3 +18,4 @@ gunicorn==19.9.0
 django-celery-results==1.0.1
 django-celery-beat==1.1.1
 django-filter==2.0.0
+djangorestframework-simplejwt==3.2.3

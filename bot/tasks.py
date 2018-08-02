@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 
 from celery import shared_task
 from django.conf import settings
+from rest_framework_simplejwt.token_blacklist.management.commands import flushexpiredtokens
 
 from bot.services.download_service import DownloadService
 from bot.services.info_service import InfoServiceBase, AtwikiInfoService, ASDBInfoService
@@ -200,3 +201,8 @@ def bot_auto_task():
     auto_update_posts()
     auto_post_weibo()
     clean_media()
+
+
+@shared_task
+def clean_expired_tokens():
+    flushexpiredtokens.Command().handle()

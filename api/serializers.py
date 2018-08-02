@@ -29,6 +29,8 @@ class ModifyTagSerializer(serializers.ModelSerializer):
             if not attr:
                 raise serializers.ValidationError("Invalid attribute [{}]".format(k))
             v = value[k]
+            if not v and v != 0:
+                raise serializers.ValidationError("[{}] can't be empty.".format(k))
             value[k] = attr.deserialize_value(v)
             if value[k] is None:
                 raise serializers.ValidationError("Unable to parse [{}] to type [{}]".format(v,
@@ -59,7 +61,7 @@ class DetailTagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = ('type', 'name', 'is_editable', 'like_count', 'detail')
+        fields = ('type', 'name', 'override_name', 'is_editable', 'like_count', 'detail')
 
     def get_detail(self, obj):
         info_list = list()
