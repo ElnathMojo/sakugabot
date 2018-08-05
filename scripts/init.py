@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 from datetime import datetime
@@ -143,7 +144,7 @@ def get_json(path):
 def import_old_data():
     for file, func in [('tags.json', import_tags),
                        ('posts.json', import_posts),
-                       # ('token.json', import_token)
+                       ('token.json', import_token)
                        ]:
         try:
             func(get_json(file))
@@ -151,20 +152,14 @@ def import_old_data():
             pass
 
 
-def delete_exist_data():
+def delete_existing_data():
     Tag.objects.all().delete()
     Post.objects.all().delete()
     Weibo.objects.all().delete()
 
 
+parser = argparse.ArgumentParser(description='Init Data')
+
 if __name__ == "__main__":
-    try:
-        init_attributes()
-        delete_exist_data()
-        import_old_data()
-    finally:
-        print('ABANDONED_TAGS: {}; ABANDONED_TAGS_E: {}'.format(len(ABANDONED_TAGS), len(ABANDONED_TAGS_E)))
-        with open('ab-e.json', 'w') as f:
-            json.dump(ABANDONED_TAGS_E, f)
-        with open('ab.json', 'w') as f:
-            json.dump(ABANDONED_TAGS, f)
+    args = parser.parse_args()
+    init_attributes()
