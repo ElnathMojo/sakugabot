@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from api import filters
+from api import filters, permissions
 from api import serializers
 from api import throttles
 from bot.services.sakugabooru_service import SakugabooruService
@@ -47,7 +47,7 @@ class TagViewSet(mixins.ListModelMixin,
     """
     queryset = Tag.objects.exclude(deletion_flag=True)
     serializer_class = serializers.BasicTagSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.EditableOrReadOnly, IsAuthenticatedOrReadOnly]
     filterset_class = filters.TagFilter
 
     def get_serializer_class(self):
@@ -67,7 +67,6 @@ class TagViewSet(mixins.ListModelMixin,
         return Response(serializers.DetailTagSerializer(self.get_object()).data)
 
     @action(detail=True, methods=['post'],
-            permission_classes=[IsAdminUser],
             serializer_class=serializers.IDTagSnapshotSerializer)
     def revert(self, request, pk=None):
         tag = self.get_object()

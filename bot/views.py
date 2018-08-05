@@ -6,19 +6,11 @@ from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from rest_framework import status, serializers
 from rest_framework.decorators import api_view
-from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 
 from rest_framework.views import APIView
 
-
-class IsAdminUser(BasePermission):
-    """
-    Allows access only to admin users.
-    """
-
-    def has_permission(self, request, view):
-        return request.user and request.user.is_superuser
+from api.permissions import IsAdminUser
 
 
 class LogViewParamsSerializer(serializers.Serializer):
