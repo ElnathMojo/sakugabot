@@ -20,3 +20,4 @@ django-celery-beat==1.1.1
 django-filter==2.0.0
 djangorestframework-simplejwt==3.2.3
 django-cors-headers==2.4.0
+django-ratelimit==1.1.0

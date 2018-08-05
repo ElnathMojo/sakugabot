@@ -16,6 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+from sakugabot.decorators import login_wrapper
+
+admin.site.login = login_wrapper(admin.site.login)
 urlpatterns = [
     path('api/', include('api.urls')),
     path('bot/', include('bot.urls')),

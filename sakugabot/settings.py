@@ -67,6 +67,8 @@ CORS_URLS_REGEX = r'^/api/.*$'
 
 ROOT_URLCONF = 'sakugabot.urls'
 
+LOGIN_REDIRECT_URL = 'api:api-root'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -120,7 +122,7 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '500/hour',
         'user': '1800/hour',
-        'auth': '20/hour'
+        'auth': '10/hour'
     },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 100
@@ -186,6 +188,8 @@ WEIBO_GIF_FPS = 14
 WEIBO_GIF_WIDTH = 360
 
 TASK_TIME_LIMIT = 1200
+
+LOGIN_RATE_LIMIT = '10/1h'
 
 LOGGING = {
     'version': 1,

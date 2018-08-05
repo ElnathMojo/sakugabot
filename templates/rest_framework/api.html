@@ -1,0 +1,25 @@
+{% extends "rest_framework/base.html" %}
+
+{% load i18n %}
+
+{% block branding %}
+    <a class="navbar-brand" rel="nofollow" href="https://www.sakugabooru.com/">
+        SAKUGABOORU
+    </a>
+{% endblock %}
+
+{% block userlinks %}
+    {% if user.is_authenticated %}
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                {{ user.username }}
+                <b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+                <li><a href='{% url 'api:logout' %}?next={{ request.path }}'>Log out</a></li>
+            </ul>
+        </li>
+    {% else %}
+        <li><a href='{% url 'api:login' %}?next={{ request.path }}'>Log in</a></li>
+    {% endif %}
+{% endblock %}

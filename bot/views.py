@@ -54,7 +54,7 @@ class ShowLog(APIView):
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: u.is_superuser, login_url="admin:login")
 @api_view()
 def test(request):
     pass
