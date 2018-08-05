@@ -87,6 +87,7 @@ class Tag(models.Model):
             return name_ja
         if self.type == self.ARTIST and self.override_name:
             return self.override_name
+        return None
 
     @property
     def ordered_detail(self):
@@ -95,13 +96,16 @@ class Tag(models.Model):
             result[key] = self._detail[key]
         return result
 
-    def save_to_detail(self, key, value):
+    def save_to_detail(self, key, value, overwrite=True):
         attr = Attribute.get_attr_by_code(key, self.type)
         if not attr:
             raise AttributeError("Attribute {} does not exist.".format(key))
         if not isinstance(value, attr.type_class):
             value = attr.type_class(value)
-        self._detail[key] = value
+        if overwrite:
+            self._detail[key] = value
+        else:
+            self._detail.setdefault(key, value)
         if key not in self.order_of_keys:
             self.order_of_keys.append(key)
 
@@ -111,8 +115,15 @@ class Tag(models.Model):
             return None
         return hash
 
-    @staticmethod
-    def _gen_snapshot_note(old, new):
+    def _gen_snapshot_note(self, old, new, hash):
+        notes = []
+        try:
+            snapshot = self.snapshots.filter(hash=hash).latest('update_time')
+            notes.append(
+                "Revert to id:{}".format(snapshot.id)
+            )
+        except TagSnapshot.DoesNotExist:
+            pass
         old_keys = list(old.keys())
         change = list()
         add = list()
@@ -123,7 +134,6 @@ class Tag(models.Model):
                 old_keys.remove(new_key)
             else:
                 add.append(new_key)
-        notes = []
         if change:
             notes.append("Change:{}".format(",".join(change)))
         if add:
@@ -144,14 +154,14 @@ class Tag(models.Model):
             if not ((snapshot.raw_user == user and seconds_since_last_create <= NEW_COMMIT_SECONDS) or
                     snapshot.raw_user is user is None):
                 snapshot = TagSnapshot(tag=self, _user=user, hash=hash,
-                                       note=self._gen_snapshot_note(snapshot.content, content))
+                                       note=self._gen_snapshot_note(snapshot.content, content, hash))
             else:
                 query = self.snapshots.order_by('-update_time')
                 if len(query) > 1:
                     if query[1].hash == hash:
                         snapshot.delete()
                         return
-                    snapshot.note = self._gen_snapshot_note(query[1].content, content)
+                    snapshot.note = self._gen_snapshot_note(query[1].content, content, hash)
                 snapshot.hash = hash
         snapshot.save(content=content)
 
@@ -324,6 +334,7 @@ class TagSnapshot(models.Model):
         get_latest_by = "update_time"
         indexes = [
             models.Index(fields=['tag', 'update_time']),
+            models.Index(fields=['hash'])
         ]
 
 

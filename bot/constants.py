@@ -14,17 +14,19 @@ PALETTE_FILE_NAME = "palette.png"
 
 ANN_URL = "http://www.animenewsnetwork.com/"
 ANN_SEARCH_ENDPOINT = "encyclopedia/search/name"
-ANN_PEOPLE_ENDPOINT = "/encyclopedia/people.php"
+ANN_PEOPLE_ENDPOINT = "encyclopedia/people.php"
 
 MAL_URL = "https://myanimelist.net/"
 MAL_SEARCH_ENDPOINT = "anime.php"
 MAL_ANIME_ENDPOINT = "anime/"
 
-BANGUMI_API_URL = "http://api.bgm.tv/"
+BANGUMI_API_URL = "https://api.bgm.tv/"
 BANGUMI_SEARCH_ENDPOINT = "search/subject/"
+BANGUMI_SUBJECT_ENDPOINT = "subject/"
 
-GOOGLE_KGRAPH_SEARCH_API = "https://kgsearch.googleapis.com/"
-GOOGLE_KGRAPH_ENTITY_ENDPOINT = "v1/entities:search"
+GOOGLE_KGS_URL = "https://kgsearch.googleapis.com/"
+GOOGLE_KGS_SEARCH_ENDPOINT = "v1/entities:search"
+GOOGLE_KGS_ENTITY_URI = "http://g.co/kg/"
 
 ATWIKI_SEARCH_URI = "https://atwiki.jp/wiki/"
 SAKUGAWIKI_URL_PATTERN = r'(?<=atwiki\.jp/sakuga/pages/)\d*(?=\.html)'
@@ -32,6 +34,9 @@ ANIMEWIKI_URL_PATTERN = r'(?<=atwiki\.jp/anime_wiki/pages/)\d*(?=\.html)'
 
 ASDB_SEARCH_URI = 'http://seesaawiki.jp/w/radioi_34/search?search_target=page_name&keywords='
 
-SYNONYM_DICT = {'ō': 'o',
-                'Ō': 'O',
-                '！': '!'}
+SYNONYM_DICT = {
+    'ō': 'o',
+    'Ō': 'O',
+    '！': '!',
+    'ū': 'u'
+}
