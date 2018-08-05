@@ -290,7 +290,7 @@ class ANNArtistInfoService(RetrieveEntityFromRemoteMixin,
         soup = BeautifulSoup(response.content, 'lxml')
         title_block = soup.find(id="page-title")
         title_block.h1.clear()
-        original_name = title_block.get_text(strip=True)
+        original_name = title_block.get_text().strip()
         pattern = regex.compile(r".*[\da-zA-Z]+.*")
         if not regex.match(pattern, original_name):  # remove space between ja_name
             if original_name.count(' ') == 1:
