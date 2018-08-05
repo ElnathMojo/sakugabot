@@ -36,7 +36,7 @@ class TagInfoUpdateTask(object):
                     pass
 
     def _get_and_save_info(self, service, *names, overwrite_keys=(), **kwargs):
-        logger.info("Tag[{}]: Getting result from {}".format(self.tag.name, service.__name__))
+        logger.info("Tag[{}]: Getting result from {} with names {}".format(self.tag.name, service.__name__, names))
         service_instance = service()
         info = service_instance.get_info(*names, **kwargs)
         for k, v in info.items():
@@ -54,13 +54,15 @@ class TagInfoUpdateTask(object):
         name = self.tag.name.replace("_", " ")
         self._get_and_save_info(ANNArtistInfoService, name)
         names = [name] + self.get_values_from_info('name_ja')
-        self._get_and_save_info(GoogleKGSArtistInfoService, *names)
+        self._get_and_save_info(GoogleKGSArtistInfoService,
+                                *names,
+                                overwrite_keys=('description',))
 
     def translate_copyright(self):
         if self.tag.type != Tag.COPYRIGHT:
             return
         name = self.tag.name.replace("_", " ")
-        self._get_and_save_info(MALCopyrightInfoService, name, self.overwrite)
+        self._get_and_save_info(MALCopyrightInfoService, name)
         names = [name] + self.get_values_from_info('name_ja')
         self._get_and_save_info(BangumiCopyrightInfoService,
                                 *names,
@@ -72,17 +74,21 @@ class TagInfoUpdateTask(object):
         if len(self.tag.name) > 6 and (len(source) < 10 or not bool(urlparse(source).netloc)):
             names = [name] + self.get_values_from_info('name_ja', 'name_zh')
             self._get_and_save_info(GoogleKGSCopyrightInfoService,
-                                    *names)
+                                    *names,
+                                    overwrite_keys=('description',))
 
     def get_additional_info(self):
         if self.tag.type not in (Tag.ARTIST, Tag.COPYRIGHT):
             return
-        ja_name = self.tag.ja_name or self.get_values_from_info('name_ja')
-        if not ja_name:
-            return
-        self._get_and_save_info(AtwikiInfoService, ja_name, self.overwrite)
+        ja_names = []
+        if self.tag.ja_name:
+            ja_names.append(self.tag.ja_name)
+        ja_names.extend(self.get_values_from_info('name_ja'))
+        if not ja_names:
+            ja_names = [self.tag.name.replace("_", " ")]
+        self._get_and_save_info(AtwikiInfoService, *ja_names)
         if self.tag.type == Tag.COPYRIGHT:
-            self._get_and_save_info(ASDBCopyrightInfoService, ja_name, self.overwrite)
+            self._get_and_save_info(ASDBCopyrightInfoService, *ja_names)
 
     @transaction.atomic
     def save(self):
@@ -101,7 +107,7 @@ class TagInfoUpdateTask(object):
 
 def update_tags_info(*tags, update_tag_type=False, overwrite=False):
     if update_tag_type:
-        SakugabooruService().update_tags([tag.name for tag in tags], force_update=True)
+        tags = SakugabooruService().update_tags([tag.name for tag in tags], force_update=True)
     for tag in tags:
         TagInfoUpdateTask(tag, overwrite).process()
 

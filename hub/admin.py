@@ -119,6 +119,13 @@ class KangKangAdmin(admin.ModelAdmin):
 @admin.register(Attribute)
 class AttributeAdmin(admin.ModelAdmin):
     readonly_fields = ('code', 'type', 'related_types')
+    actions = ['init_attributes']
+
+    def init_attributes(self, request, queryset):
+        from scripts.init import init_attributes
+        init_attributes()
+
+    init_attributes.short_description = _("Init Attributes")
 
     def has_delete_permission(self, request, obj=None):
         if request.user.id <= 1:

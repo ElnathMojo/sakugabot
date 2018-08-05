@@ -582,12 +582,6 @@ class AtwikiInfoService(InfoServiceBase):
         'anime_wiki_id': ANIMEWIKI_URL_PATTERN
     }
 
-    # @default_if_exception(default=dict(),
-    #                       logger=logger,
-    #                       msg="Getting Information Failed.")
-    # def get_info(self, *names):
-    #     pass
-
     @retry(stop_max_attempt_number=3,
            wait_fixed=1000,
            retry_on_exception=retry_if_network_error_or_parse_error)

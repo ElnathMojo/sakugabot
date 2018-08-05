@@ -30,6 +30,13 @@ META_ATTRIBUTES = [
         "related_types": [c[0] for c in Tag.TYPE_CHOICES],
     },
     {
+        "code": "name_en",
+        "name": "英文名称",
+        "type": Attribute.STRING,
+        "format": None,
+        "related_types": [c[0] for c in Tag.TYPE_CHOICES],
+    },
+    {
         "code": "wiki_zh",
         "name": "中文维基",
         "type": Attribute.STRING,
