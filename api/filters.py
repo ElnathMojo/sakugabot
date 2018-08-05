@@ -1,6 +1,6 @@
 from django_filters import rest_framework as filters
 
-from hub.models import Post, Tag, Attribute
+from hub.models import Post, Tag, Attribute, TagSnapshot
 
 
 class NumArrayFilter(filters.BaseCSVFilter, filters.NumberFilter):
@@ -38,3 +38,12 @@ class PostFilter(filters.FilterSet):
     class Meta:
         model = Post
         fields = ('id',)
+
+
+class TagSnapshotFilter(filters.FilterSet):
+    user = filters.CharFilter(label='User',
+                              field_name='_user__username')
+
+    class Meta:
+        model = TagSnapshot
+        fields = ('tag', 'user')

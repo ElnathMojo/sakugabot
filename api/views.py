@@ -30,7 +30,7 @@ class TagSnapshotViewSet(viewsets.ReadOnlyModelViewSet):
     Tag History
     """
     queryset = TagSnapshot.objects.order_by('-update_time')
-    filterset_fields = ('tag',)
+    filterset_class = filters.TagSnapshotFilter
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
