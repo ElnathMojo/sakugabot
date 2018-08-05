@@ -58,10 +58,11 @@ class ModifyTagSerializer(serializers.ModelSerializer):
 
 class DetailTagSerializer(serializers.ModelSerializer):
     detail = serializers.SerializerMethodField()
+    last_edit_user = serializers.SerializerMethodField()
 
     class Meta:
         model = Tag
-        fields = ('type', 'name', 'override_name', 'is_editable', 'like_count', 'detail')
+        fields = ('type', 'name', 'override_name', 'is_editable', 'like_count', 'detail', 'last_edit_user')
 
     def get_detail(self, obj):
         info_list = list()
@@ -75,6 +76,12 @@ class DetailTagSerializer(serializers.ModelSerializer):
                 }
             )
         return info_list
+
+    def get_last_edit_user(self, obj):
+        snapshot = obj.snapshot_latest
+        if snapshot:
+            return snapshot.user_name
+        return "System"
 
 
 class IDTagSnapshotSerializer(serializers.Serializer):

@@ -38,10 +38,10 @@ class TagSnapshotViewSet(viewsets.ReadOnlyModelViewSet):
         return serializers.BasicTagSnapshotSerializer
 
 
-class TagViewSet(viewsets.GenericViewSet,
-                 mixins.ListModelMixin,
+class TagViewSet(mixins.ListModelMixin,
                  mixins.UpdateModelMixin,
-                 mixins.RetrieveModelMixin):
+                 mixins.RetrieveModelMixin,
+                 viewsets.GenericViewSet):
     """
     Tag Information
     """
