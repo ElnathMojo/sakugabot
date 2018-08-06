@@ -276,7 +276,7 @@ class ANNArtistInfoService(RetrieveEntityFromRemoteMixin,
             info_dict.update(
                 {
                     self.ENTITY_PK_NAME: int(regex.findall(r"\d+", result.get('href'))[0]),
-                    self.ENTITY_NAME_KEYS[0]: result.get_text(strip=True)
+                    self.ENTITY_NAME_KEYS[0]: result.get_text().strip()
                 }
             )
             info_list.append(info_dict)
@@ -290,7 +290,7 @@ class ANNArtistInfoService(RetrieveEntityFromRemoteMixin,
         soup = BeautifulSoup(response.content, 'lxml')
         title_block = soup.find(id="page-title")
         title_block.h1.clear()
-        original_name = title_block.get_text().strip()
+        original_name = title_block.get_text(strip=True)
         pattern = regex.compile(r".*[\da-zA-Z]+.*")
         if not regex.match(pattern, original_name):  # remove space between ja_name
             if original_name.count(' ') == 1:
@@ -635,7 +635,7 @@ class ASDBCopyrightInfoService(InfoServiceBase):
         soup = BeautifulSoup(response.content, 'lxml', from_encoding='EUC-JP')
         for result in soup.find_all('h3', 'keyword'):
             link = result.a['href']
-            result_name = result.a.get_text().strip()
+            result_name = result.a.get_text(strip=True)
             info_list.append(
                 {
                     self.ENTITY_PK_NAME: link,

@@ -49,8 +49,8 @@ class TestInfoServices(SimpleTestCase):
 
     def test_ann(self):
         from bot.services.info_service import ANNArtistInfoService
-        self.assertDictEqual(ANNArtistInfoService().get_info("koji ito"),
-                             {'name_ja': '伊藤浩二', 'ann_pid': 2253, 'name_en': 'Kōji Itō'})
+        self.assertDictEqual(ANNArtistInfoService().get_info("yuuko sera"),
+                             {'name_ja': '世良悠子', 'ann_pid': 61765, 'name_en': 'Yuuko Sera'})
 
     def test_mal(self):
         from bot.services.info_service import MALCopyrightInfoService
