@@ -42,12 +42,17 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     readonly_fields = ('like_count', 'order_of_keys', 'post_set', '_detail')
 
-    actions = ['update_info']
+    actions = ['update_info', 'update_info_overwrite']
 
     def update_info(self, request, queryset):
         update_tags_info_task.delay(*[x.pk for x in queryset], update_tag_type=True)
 
     update_info.short_description = _("Update Selected Tags' Information")
+
+    def update_info_overwrite(self, request, queryset):
+        update_tags_info_task.delay(*[x.pk for x in queryset], update_tag_type=True, overwrite=True)
+
+    update_info_overwrite.short_description = _("Update Selected Tags' Information(Overwrite)")
 
 
 class SkippedFilter(admin.SimpleListFilter):

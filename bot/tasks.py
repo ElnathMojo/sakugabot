@@ -30,8 +30,12 @@ class TagInfoUpdateTask(object):
         for k, v in self.info.items():
             if v:
                 try:
+                    logger.info("Info [{}: {}] is being added "
+                                "to Tag[{}]. Overwrite: {}".format(k,
+                                                                   v,
+                                                                   self.tag.name,
+                                                                   self.overwrite))
                     self.tag.save_to_detail(k, v, self.overwrite)
-                    logger.info("Info [{}: {}] has been added to Tag[{}]".format(k, v, self.tag.name))
                 except AttributeError:
                     pass
 
@@ -113,9 +117,9 @@ def update_tags_info(*tags, update_tag_type=False, overwrite=False):
 
 
 @shared_task(soft_time_limit=TIME_LIMIT)
-def update_tags_info_task(*tag_pks, update_tag_type=False):
+def update_tags_info_task(*tag_pks, update_tag_type=False, overwrite=False):
     tags = Tag.objects.filter(pk__in=tag_pks)
-    update_tags_info(*tags, update_tag_type=update_tag_type)
+    update_tags_info(*tags, update_tag_type=update_tag_type, overwrite=overwrite)
 
 
 @shared_task
