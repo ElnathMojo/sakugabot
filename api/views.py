@@ -72,7 +72,6 @@ class TagViewSet(mixins.ListModelMixin,
         tag = self.get_object()
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        print(serializer)
         if not tag.snapshots.filter(id=serializer.validated_data["id"]).exists():
             return Response({"detail": "Tag[{}] doesn't have a snapshot with ID[{}]".format(
                 tag.name,

@@ -118,7 +118,7 @@ class DetailTagSnapshotSerializer(serializers.ModelSerializer):
 class AttributeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attribute
-        fields = '__all__'
+        exclude = ('format',)
 
 
 class BasicAttributeSerializer(serializers.ModelSerializer):

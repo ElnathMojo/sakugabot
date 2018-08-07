@@ -1,0 +1,617 @@
+openapi: "3.0.0"
+info:
+  version: v1
+  title: Sakugabot API
+servers:
+- url: https://sakugabot.pw/api
+tags:
+- name: Post
+  description: "Sakugabooru Post"
+- name: Tag
+  description: "Sakugabooru Tag"
+- name: Snapshot
+  description: "Tag Edit History"
+- name: Attribute
+  description: "Tag Supported Attributes"
+- name: Token
+  description: "Authorization"
+
+paths:
+  /posts/:
+    get:
+      summary: Post List
+      parameters:
+      - name: page
+        in: query
+        description: Page Number
+        schema:
+          type: integer
+      - name: id
+        in: query
+        description: Multiple ids can be provided with comma separated strings.
+        schema:
+          type: integer
+      tags:
+      - Post
+      responses:
+        200:
+          description: List of Posts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Posts"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /posts/{id}/:
+    get:
+      summary: Post Instance
+      parameters:
+      - name: id
+        in: path
+        description: Post id
+        required: true
+        schema:
+          type: integer
+      tags:
+      - Post
+      responses:
+        200:
+          description: Detail of the Post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DetailPost"
+        default:
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /tags/:
+    get:
+      summary: Tag List
+      parameters:
+      - name: name
+        in: query
+        description: Multiple names can be provided with comma separated strings.
+        schema:
+          type: string
+      - name: type
+        in: query
+        description: Multiple types can be provided with comma separated strings.
+        schema:
+          $ref: '#/components/schemas/BasicTag/properties/type'
+      tags:
+      - Tag
+      responses:
+        200:
+          description: List of Tags
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tags"
+        default:
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /tags/{name}/:
+    get:
+      summary: Tag Instance
+      parameters:
+      - name: name
+        in: path
+        description: Tag Name
+        required: true
+        schema:
+          type: string
+      tags:
+      - Tag
+      responses:
+        200:
+          description: Detail of the Tag
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DetailTag"
+        default:
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      summary: Update Tag Detail
+      parameters:
+      - name: name
+        in: path
+        description: Tag Name
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTag"
+      tags:
+      - Tag
+      security:
+      - bearerAuth: []
+      responses:
+        200:
+          description: Detail of the Tag
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DetailTag"
+        default:
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /tags/{name}/revert/:
+    put:
+      summary: Revert to a Previous Snapshot
+      parameters:
+      - name: name
+        in: path
+        description: Tag Name
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: id of the tag snapshot
+                  example: 0
+      tags:
+      - Tag
+      security:
+      - bearerAuth: []
+      responses:
+        200:
+          description: Detail of the Tag
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DetailTag"
+        default:
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /tag_snapshots/:
+    get:
+      summary: Tag Snapshot List
+      parameters:
+      - name: user
+        in: query
+        description: Filter by edit user.
+        schema:
+          $ref: '#/components/schemas/User/properties/username'
+      - name: tag
+        in: query
+        description: Filter by tag.
+        schema:
+          $ref: '#/components/schemas/BasicTag/properties/name'
+      tags:
+      - Snapshot
+      responses:
+        200:
+          description: List of Tag Snapshots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Snapshots"
+        default:
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /tag_snapshots/{id}/:
+    get:
+      summary: Tag Snapshot Instance
+      parameters:
+      - name: id
+        in: path
+        description: Tag Snapshot id
+        required: true
+        schema:
+          type: integer
+      tags:
+      - Snapshot
+      responses:
+        200:
+          description: Detail of the Tag Snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DetailSnapshot"
+        default:
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /attributes/:
+    get:
+      summary: Attribute List
+      parameters:
+      - name: related_types
+        in: query
+        description: Multiple types can be provided with comma separated strings.
+        schema:
+          $ref: '#/components/schemas/BasicTag/properties/type'
+      tags:
+      - Attribute
+      responses:
+        200:
+          description: List of Attributes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Attribute"
+        default:
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /token/:
+    post:
+      summary: Grant Access Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      tags:
+      - Token
+      responses:
+        200:
+          description: Token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+        default:
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /token/refresh/:
+    post:
+      summary: Refresh Access Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshToken"
+      tags:
+      - Token
+      responses:
+        200:
+          description: Token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccessToken"
+        default:
+          description: Unexpected Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    BasicPost:
+      properties:
+        id:
+          type: integer
+          example: 51141
+        source:
+          type: string
+          example: "Movie 4: Last Game"
+        file_size:
+          type: integer
+          example: 11413088
+        uploader:
+          type: string
+          example: uploader
+        is_shown:
+          type: boolean
+          example: true
+        is_pending:
+          type: boolean
+          example: false
+        score:
+          type: boolean
+          example: 0
+        rating:
+          type: string
+          example: s
+        update_time:
+          type: string
+          example: "2018-08-01T15:14:48.584039Z"
+        preview_url:
+          type: string
+          example: https://www.sakugabooru.com/data/preview/49f6c5facc51b56d7f991b45e8c02a34.jpg
+        media_url:
+          type: string
+          example: https://www.sakugabooru.com/data/49f6c5facc51b56d7f991b45e8c02a34.mp4
+        sakugabooru_url:
+          type: string
+          example: https://www.sakugabooru.com/post/show/51141
+
+    ListPost:
+      allOf:
+      - $ref: '#/components/schemas/BasicPost'
+      - type: object
+        properties:
+          tags:
+            type: array
+            items:
+              $ref: '#/components/schemas/BasicTag/properties/name'
+          weibo_image_url:
+            type: string
+            example: http://wx4.sinaimg.cn/large/006fdfmnly1fsikdokshmg30a005mnph.gif
+            nullable: true
+
+    DetailPost:
+      allOf:
+      - $ref: '#/components/schemas/BasicPost'
+      - type: object
+        properties:
+          tags:
+            type: array
+            items:
+              $ref: '#/components/schemas/SimpleTag'
+          weibo:
+            $ref: '#/components/schemas/Weibo'
+
+    Weibo:
+      properties:
+        weibo_id:
+          type: integer
+          example: 4253287031085587
+        img_url:
+          type: string
+          example: http://wx4.sinaimg.cn/large/006fdfmnly1fsikdokshmg30a005mnph.gif
+        create_time:
+          type: string
+          example: "2018-08-01T15:14:48.577164Z"
+
+    BasicAttribute:
+      properties:
+        code:
+          type: string
+          example: mal_aid
+        name:
+          type: string
+          example: MyAnimeList
+
+
+    Attribute:
+      allOf:
+      - $ref: '#/components/schemas/BasicAttribute'
+      - properties:
+          type:
+            type: integer
+            example: 0
+            description: "Integer:1, Float:2, String:3, Datetime:4, Date:5, Time:6"
+            enum: [0, 1, 2, 3, 4, 5, 6]
+          alias:
+            type: object
+            example: {"en": "MyAnimeList"}
+          related_types:
+            type: array
+            items:
+              $ref: '#/components/schemas/BasicTag/properties/type'
+
+    BasicTag:
+      properties:
+        name:
+          type: string
+          example: hideaki_anno
+        type:
+          type: integer
+          example: 1
+          enum: [0, 1, 3, 4, 5]
+          description: "General:0, Artist:1, Copyright:3, Terminology:4, Meta:5"
+
+    SimpleTag:
+      allOf:
+      - $ref: '#/components/schemas/BasicTag'
+      - properties:
+          main_name:
+            type: string
+            example: 庵野秀明
+
+    DetailTag:
+      allOf:
+      - $ref: '#/components/schemas/BasicTag'
+      - properties:
+          override_name:
+            type: string
+            example: 庵野秀明
+          is_editable:
+            type: boolean
+            example: true
+          like_count:
+            type: integer
+            example: 0
+          detail:
+            type: array
+            items:
+              $ref: "#/components/schemas/DetailContent"
+          last_edit_user:
+            $ref: "#/components/schemas/User/properties/username"
+
+    UpdateTag:
+      properties:
+        detail:
+          type: object
+          description: "See attribute api to get detail of key and value type."
+          example:  {"ann_pid": 15 }
+        order_of_keys:
+          type: array
+          items:
+            type: string
+            example: ann_pid
+            description: "Order will be generated automaticly if the list is empty."
+
+    DetailContent:
+      description: Value type depands on attribute type.
+      properties:
+        value:
+          oneOf:
+          - type: integer
+            example: 15
+          - type: string
+            example: url
+        formated_value:
+          type: string
+          example: "https://www.animenewsnetwork.com/encyclopedia/people.php?id=15"
+          nullable: true
+        attribute:
+          $ref: "#/components/schemas/BasicAttribute"
+
+    Tags:
+      properties:
+        count:
+          type: integer
+          example: 500
+        next:
+          type: string
+          example: http://sakugabot.pw/api/tags/?page=3
+        previous:
+          type: string
+          example: http://sakugabot.pw/api/tags/?page=5
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimpleTag'
+
+    Posts:
+      properties:
+        count:
+          type: integer
+          example: 500
+        next:
+          type: string
+          example: http://sakugabot.pw/api/posts/?page=3
+        previous:
+          type: string
+          example: http://sakugabot.pw/api/posts/?page=5
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListPost'
+
+    Snapshots:
+      properties:
+        count:
+          type: integer
+          example: 500
+        next:
+          type: string
+          example: http://sakugabot.pw/api/tag_snapshots/?page=3
+        previous:
+          type: string
+          example: http://sakugabot.pw/api/tag_snapshots/?page=5
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BasicSnapshot'
+
+    BasicSnapshot:
+      properties:
+        id:
+          type: integer
+          example: 2095
+        tag:
+          $ref: '#/components/schemas/BasicTag/properties/name'
+        hash:
+          type: string
+          example: c7ac71028af2270007fa1f074ed85456
+        update_time:
+          type: string
+          example: "2018-08-06T05:36:30.967019Z"
+        note:
+          type: string
+          example: "Init"
+        create_time:
+          type: string
+          example: "2018-08-06T05:36:30.967019Z"
+        user_name:
+          $ref: "#/components/schemas/User/properties/username"
+
+    DetailSnapshot:
+      allOf:
+      - $ref: '#/components/schemas/BasicSnapshot'
+      - properties:
+          content:
+            type: array
+            items:
+              $ref: "#/components/schemas/DetailContent"
+
+    AccessToken:
+      properties:
+        access:
+          type: string
+          example: accesstoken
+
+    RefreshToken:
+      properties:
+        refresh:
+          type: string
+          example: accesstoken
+
+    Token:
+      allOf:
+      - $ref: '#/components/schemas/AccessToken'
+      - $ref: '#/components/schemas/RefreshToken'
+
+
+    User:
+      properties:
+        username:
+          type: string
+          example: test
+        password:
+          type: string
+          example: ThisIsPassword
+
+    Error:
+      properties:
+        detail:
+          type: string
