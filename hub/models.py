@@ -89,6 +89,10 @@ class Tag(models.Model):
             return self.override_name
         return None
 
+    def names(self):
+        name_codes = [x.code for x in Attribute.objects.filter(code__startswith='name')]
+        return dict(filter(lambda x: x[0] in name_codes, list(self._detail.items())))
+
     @property
     def ordered_detail(self):
         result = collections.OrderedDict()

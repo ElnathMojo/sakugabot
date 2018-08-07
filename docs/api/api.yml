@@ -77,7 +77,7 @@ paths:
       parameters:
       - name: name
         in: query
-        description: Multiple names can be provided with comma separated strings.
+        description: Multiple names can be provided with comma separated strings. (Only for field 'name')
         schema:
           type: string
       - name: type
@@ -85,6 +85,12 @@ paths:
         description: Multiple types can be provided with comma separated strings.
         schema:
           $ref: '#/components/schemas/BasicTag/properties/type'
+      - name: search
+        in: query
+        description: Will search all availuable name fields.
+        schema:
+          type: string
+          example: 庵野秀明
       tags:
       - Tag
       responses:

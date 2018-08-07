@@ -37,10 +37,10 @@ class TranslationFilter(admin.SimpleListFilter):
 class TagAdmin(admin.ModelAdmin):
     fields = (
         'name', 'override_name', 'deletion_flag', 'is_editable', '_detail', 'order_of_keys', 'like_count')
-    list_display = ('name', 'weibo_name', 'type')
+    list_display = ('name', 'type', 'names', 'override_name', 'weibo_name')
     list_filter = ('type', TranslationFilter)
-    search_fields = ['name', 'override_name'] + ['_detail__{}'.format(attr.name) for attr in
-                                                 Attribute.objects.filter(name__startswith='name')]
+    search_fields = ['name', 'override_name'] + ['_detail__{}'.format(attr.code) for attr in
+                                                 Attribute.objects.filter(code__startswith='name')]
     readonly_fields = ('like_count', 'order_of_keys', 'post_set', '_detail')
 
     actions = ['update_info', 'update_info_overwrite']
