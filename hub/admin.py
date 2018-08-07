@@ -39,7 +39,8 @@ class TagAdmin(admin.ModelAdmin):
         'name', 'override_name', 'deletion_flag', 'is_editable', '_detail', 'order_of_keys', 'like_count')
     list_display = ('name', 'weibo_name', 'type')
     list_filter = ('type', TranslationFilter)
-    search_fields = ('name',)
+    search_fields = ['name', 'override_name'] + ['_detail__{}'.format(attr.name) for attr in
+                                                 Attribute.objects.filter(name__startswith='name')]
     readonly_fields = ('like_count', 'order_of_keys', 'post_set', '_detail')
 
     actions = ['update_info', 'update_info_overwrite']
