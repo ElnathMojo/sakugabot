@@ -1,5 +1,6 @@
 import collections
 import difflib
+import html
 import logging
 from urllib import parse
 
@@ -530,13 +531,13 @@ class GoogleKGSInfoService(InfoServiceBase):
                              " by DESCRIPTIONS[{}]. Abandoned.".format(kgs_id,
                                                                        self.DESCRIPTION_FILTER))
                 continue
-            item_info.update(dict(description=description_info[0][1]))
+            item_info.update(dict(description=html.unescape(description_info[0][1])))
 
             name_info = self._retrieve_info(result.get('name', list()),
                                             ['@value'],
                                             '@language',
                                             self._language_codes)
-            name_info = {"name_{}".format(x[0]): x[1] for x in name_info}
+            name_info = {"name_{}".format(x[0]): html.unescape(x[1]) for x in name_info}
             item_info.update(name_info)
 
             wiki_info = self._retrieve_info(result.get('detailedDescription', list()),

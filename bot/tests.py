@@ -60,14 +60,14 @@ class TestInfoServices(SimpleTestCase):
     def test_bgm(self):
         from bot.services.info_service import BangumiCopyrightInfoService
         self.assertDictEqual(BangumiCopyrightInfoService().get_info("Violet Evergarden",
-                                                                "紫罗兰永恒花园(ヴァイオレット・エヴァーガーデン)"),
+                                                                    "紫罗兰永恒花园(ヴァイオレット・エヴァーガーデン)"),
                              {'name_ja': 'ヴァイオレット・エヴァーガーデン', 'bgm_sid': 183878, 'name_zh': '紫罗兰永恒花园',
-                          'description': '某个大陆的、某个时代。\r\n大陆南北分割的战争结束了，世界逐渐走向了和平。\r\n在战争中、'
-                                         '作为军人而战斗的薇尔莉特·伊芙加登离开了军队，来到了大港口城市。怀抱着战场上一个对她而言'
-                                         '比谁都重要的人告诉了她“某个话语”――。\r\n街道上人群踊跃，有轨电车在排列着煤气灯的马路上'
-                                         '穿梭着。薇尔莉特在街道上找到了“代写书信”的工作。那是根据委托人的想法来组织出相应语言的工'
-                                         '作。\r\n她直面着委托人、触碰着委托人内心深处的坦率感情。与此同时，薇尔莉特在记录书信时，'
-                                         '那一天所告知的那句话的意思也逐渐接近了。'})
+                              'description': '某个大陆的、某个时代。\r\n大陆南北分割的战争结束了，世界逐渐走向了和平。\r\n在战争中、'
+                                             '作为军人而战斗的薇尔莉特·伊芙加登离开了军队，来到了大港口城市。怀抱着战场上一个对她而言'
+                                             '比谁都重要的人告诉了她“某个话语”――。\r\n街道上人群踊跃，有轨电车在排列着煤气灯的马路上'
+                                             '穿梭着。薇尔莉特在街道上找到了“代写书信”的工作。那是根据委托人的想法来组织出相应语言的工'
+                                             '作。\r\n她直面着委托人、触碰着委托人内心深处的坦率感情。与此同时，薇尔莉特在记录书信时，'
+                                             '那一天所告知的那句话的意思也逐渐接近了。'})
 
     def test_atwiki(self):
         from bot.services.info_service import AtwikiInfoService
@@ -88,10 +88,19 @@ class TestInfoServices(SimpleTestCase):
                           'name_en': 'Yūki Hayashi',
                           'wiki_ja': 'https://ja.wikipedia.org/wiki/%E6%9E%97%E7%A5%90%E5%B7%B1'})
         from bot.services.info_service import GoogleKGSCopyrightInfoService
+        self.assertDictEqual(GoogleKGSCopyrightInfoService().get_info("big fish & begonia"),
+                             {'kgs_url': 'http://g.co/kg/m/0125ynd0',
+                              'description': '《大魚·海棠》是一部由彼岸天文化製作，梁旋、張春導演，梁旋編劇的動畫電影。'
+                                             '電影取材於《莊子·逍遙遊》、《山海經》、《搜神記》等中國古書，並融合了「女媧補天」'
+                                             '等中國上古神話元素。2016年7月8日於中國大陸上映。根據製片方官網的宣傳，該片意在講述一個'
+                                             '「屬於中國人的奇幻故事」。',
+                              'name_zh': '大鱼·海棠', 'name_ja': '大魚海棠', 'name_en': 'Big Fish & Begonia',
+                              'wiki_zh': 'https://zh.wikipedia.org/zh-tw/%E5%A4%A7%E9%B1%BC%C2%B7%E6%B5%B7%E6%A3%A0',
+                              'wiki_en': 'https://en.wikipedia.org/wiki/Big_Fish_%26_Begonia'})
         self.assertDictEqual(GoogleKGSCopyrightInfoService().get_info("zenki", "Zenki2", language_codes=("en",)),
                              {'kgs_url': 'http://g.co/kg/m/0cqf16',
-                          'description': "Zenki is a Japanese manga series written by Kikuhide Tani and illustrated "
-                                         "by Yoshihiro Kuroiwa. It was serialized in the Shueisha publication, Monthly"
-                                         " Shōnen Jump from 1992 to 1996. ",
-                          'name_en': 'Zenki',
-                          'wiki_en': 'https://en.wikipedia.org/wiki/Zenki'})
+                              'description': "Zenki is a Japanese manga series written by Kikuhide Tani and "
+                                             "illustrated by Yoshihiro Kuroiwa. It was serialized in the Shueisha "
+                                             "publication, Monthly Shōnen Jump from 1992 to 1996. ",
+                              'name_en': 'Zenki',
+                              'wiki_en': 'https://en.wikipedia.org/wiki/Zenki'})
