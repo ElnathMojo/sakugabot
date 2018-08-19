@@ -64,5 +64,5 @@ class AccessTokenAdmin(admin.ModelAdmin):
 @admin.register(Weibo)
 class WeiboAdmin(admin.ModelAdmin):
     list_display = ('weibo_id', 'img_url', 'create_time', 'uid', 'post')
-    search_fields = ('weibo_id', 'img_url', 'uid')
+    search_fields = ('weibo_id', 'img_url', 'uid__uid')
     readonly_fields = ('weibo_id', 'img_url', 'create_time', 'uid', 'post')
