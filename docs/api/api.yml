@@ -2,6 +2,7 @@ openapi: "3.0.0"
 info:
   version: v1
   title: Sakugabot API
+  description: Sakugabooru Weibo Announcement Bot API
 servers:
 - url: https://sakugabot.pw/api
 tags:
@@ -407,14 +408,17 @@ components:
     Weibo:
       properties:
         weibo_id:
-          type: integer
-          example: 4253287031085587
+          type: string
+          example: '4253287031085587'
         img_url:
           type: string
           example: http://wx4.sinaimg.cn/large/006fdfmnly1fsikdokshmg30a005mnph.gif
         create_time:
           type: string
           example: "2018-08-01T15:14:48.577164Z"
+        weibo_url:
+          type: string
+          example: https://weibo.com/5721599343/GmmeP4ypt
 
     BasicAttribute:
       properties:
@@ -600,7 +604,7 @@ components:
       properties:
         refresh:
           type: string
-          example: accesstoken
+          example: refreshtoken
 
     Token:
       allOf:
