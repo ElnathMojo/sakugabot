@@ -14,10 +14,11 @@ logger = logging.getLogger('bot.services.weibo')
 class WeiboService(object):
     def __init__(self):
         try:
+            self.token = AccessToken.objects.filter(enable=True).order_by('expires_at').last()
             self.client = Client(settings.WEIBO_API_KEY,
                                  settings.WEIBO_API_SECRET,
                                  settings.WEIBO_REDIRECT_URI,
-                                 token=AccessToken.objects.filter(enable=True).order_by('expires_at').last().token)
+                                 token=self.token.token)
         except AccessToken.DoesNotExist:
             raise RuntimeError("WeiboService init failed. Available AccessToken Doesn't Exist")
 
@@ -108,7 +109,9 @@ class WeiboService(object):
             try:
                 with open(image_path, 'rb') as pic:
                     res = self.client.post('statuses/share', status=text, pic=pic)
-                    return Weibo.objects.create(weibo_id=res['id'], img_url=res['original_pic'])
+                    return Weibo.objects.create(weibo_id=res['id'],
+                                                img_url=res['original_pic'],
+                                                uid=self.token)
             except RuntimeError as e:
                 if any(x in str(e) for x in ['20012', '20013']):
                     logger.warning("Post id[{}]: {}; Try to Shorten.".format(post.id, str(e)))

@@ -142,7 +142,7 @@ class BasicPostSerializer(serializers.ModelSerializer):
 class WeiboSerializer(serializers.ModelSerializer):
     class Meta:
         model = Weibo
-        fields = '__all__'
+        fields = ('weibo_id', 'img_url', 'create_time', 'weibo_url')
 
 
 class DetailPostSerializer(serializers.ModelSerializer):

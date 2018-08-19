@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
-from bot.tasks import update_tags_info_task, update_posts_task
+from bot.tasks import update_tags_info_task, update_posts_task, post_weibo_task
 from hub.models import Post, Tag, TagSnapshot, Attribute, Node, TagSnapshotNodeRelation, Uploader
 
 
@@ -82,7 +82,7 @@ class PostAdmin(admin.ModelAdmin):
     list_filter = ('posted', 'ext', 'rating', SkippedFilter)
     search_fields = ('id', 'md5', 'uploader')
 
-    actions = ['update_info']
+    actions = ['update_info', 'post_weibo']
 
     def post_tags(self, obj):
         return " ".join([tag.name for tag in obj.tags.all()])
@@ -91,9 +91,10 @@ class PostAdmin(admin.ModelAdmin):
 
     def weibo_id(self, obj):
         try:
-            return format_html('<a href="{}">{}</a>',
-                               obj.weibo.img_url,
-                               obj.weibo.weibo_id)
+            return format_html('<a href="{}">{}</a> <a href="{}">img</a>',
+                               obj.weibo.weibo_url,
+                               obj.weibo.weibo_id,
+                               obj.weibo.img_url)
         except:
             return 'None'
 
@@ -103,6 +104,11 @@ class PostAdmin(admin.ModelAdmin):
         update_posts_task.delay(*[x.pk for x in queryset])
 
     update_info.short_description = _("Update Selected Posts' Information")
+
+    def post_weibo(self, request, queryset):
+        post_weibo_task.delay(*[x.pk for x in queryset.filter(weibo__isnull=True)])
+
+    post_weibo.short_description = _("Post Selected Posts to Weibo")
 
 
 @admin.register(TagSnapshot, Node, TagSnapshotNodeRelation)

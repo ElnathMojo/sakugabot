@@ -161,17 +161,33 @@ def auto_update_posts():
         update_tags_info(*booru.created_tags)
 
 
+def post_weibo(*posts):
+    weibo_service = WeiboService()
+    for post in posts:
+        try:
+            logger.info("Post[{}]: Downloading media.".format(post.id))
+            media_path = DownloadService().download_post_media(post)
+            logger.info("Post[{}]: Transcoding media.".format(post.id))
+            media_path = MediaService().transcoding_media(post, media_path)
+            logger.info("Post[{}]: Sending weibo.".format(post.id))
+            post.posted = True
+            post.weibo = weibo_service.post_weibo(post, media_path)
+            post.save()
+            logger.info("Post[{}]: Posting Weibo Success. weibo_id[{}]".format(post.id, post.weibo.weibo_id))
+        except RuntimeError as e:
+            if '[SKIP]' in str(e):
+                post.posted = True
+                post.save()
+                continue
+            break
+        except:
+            logger.exception("Something went wrong while posting Post[{}].".format(post.id))
+            raise
+
+
 @shared_task(soft_time_limit=TIME_LIMIT)
-def post_weibo(post):
-    logger.info("Post[{}]: Downloading media.".format(post.id))
-    media_path = DownloadService().download_post_media(post)
-    logger.info("Post[{}]: Transcoding media.".format(post.id))
-    media_path = MediaService().transcoding_media(post, media_path)
-    logger.info("Post[{}]: Sending weibo.".format(post.id))
-    post.posted = True
-    post.weibo = WeiboService().post_weibo(post, media_path)
-    post.save()
-    logger.info("Post[{}]: Posting Weibo Success. weibo_id[{}]".format(post.id, post.weibo.weibo_id))
+def post_weibo_task(*post_pks):
+    post_weibo(*Post.objects.filter(pk__in=post_pks).order_by('id'))
 
 
 @shared_task(soft_time_limit=TIME_LIMIT)
@@ -182,19 +198,8 @@ def auto_post_weibo():
     except Post.DoesNotExist:
         posts = list(reversed(Post.objects.filter(posted=False).order_by('-id')[:20]))
     if not posts:
-        logger.info("There's no need to send weibo.")
-    for post in posts:
-        try:
-            post_weibo(post)
-        except RuntimeError as e:
-            if '[SKIP]' in str(e):
-                post.posted = True
-                post.save()
-                continue
-            break
-        except:
-            logger.exception("Something went wrong while posting Post[{}].".format(post.id))
-            raise
+        logger.info("There's no need to post weibo.")
+    post_weibo(*posts)
 
 
 @shared_task(soft_time_limit=TIME_LIMIT)
@@ -224,9 +229,11 @@ def clean_media():
 
 @shared_task(soft_time_limit=TIME_LIMIT)
 def bot_auto_task():
-    auto_update_posts()
-    auto_post_weibo()
-    clean_media()
+    try:
+        auto_update_posts()
+        auto_post_weibo()
+    finally:
+        clean_media()
 
 
 @shared_task

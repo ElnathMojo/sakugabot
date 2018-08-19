@@ -2,11 +2,12 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib import admin
+from django.core.exceptions import PermissionDenied
 from django.template.response import TemplateResponse
 from django.urls import path
 from pytz import utc
 
-from bot.models import AccessToken
+from bot.models import AccessToken, Weibo
 from bot.services.ultils.weibo import Client
 
 
@@ -18,20 +19,25 @@ class AccessTokenAdmin(admin.ModelAdmin):
 
     def get_urls(self):
         urls = super().get_urls()
+        info = self.model._meta.app_label, self.model._meta.model_name
+
         my_urls = [
-            path('obtain/', self.admin_site.admin_view(self.gen_token))
+            path('obtain/', self.admin_site.admin_view(self.gen_token), name='%s_%s_obtain_token' % info)
         ]
         return my_urls + urls
 
     def gen_token(self, request):
+        has_view_permission = self.has_view_permission(request)
+        if not has_view_permission:
+            raise PermissionDenied
         code = request.GET.get('code', None)
-        info = self.model._meta.app_label, self.model._meta.model_name
         weibo = Client(settings.WEIBO_API_KEY,
                        settings.WEIBO_API_SECRET,
                        settings.WEIBO_REDIRECT_URI)
         context = dict(
             self.admin_site.each_context(request),
             title="Obtain Token",
+            has_view_permission=has_view_permission,
             opts=self.model._meta
         )
 
@@ -53,3 +59,10 @@ class AccessTokenAdmin(admin.ModelAdmin):
         except Exception as e:
             context['error'] = str(e)
             return TemplateResponse(request, "gen_token.html", context)
+
+
+@admin.register(Weibo)
+class WeiboAdmin(admin.ModelAdmin):
+    list_display = ('weibo_id', 'img_url', 'create_time', 'uid', 'post')
+    search_fields = ('weibo_id', 'img_url', 'uid')
+    readonly_fields = ('weibo_id', 'img_url', 'create_time', 'uid', 'post')

@@ -4,6 +4,9 @@ SAKUGABOORU_PREVIEW_URL = SAKUGABOORU_DATA_URL + "preview/"
 SAKUGABOORU_PREVIEW_EXT = "jpg"
 SAKUGABOORU_POST = SAKUGABOORU_BASE_URL + "post/show/"
 
+WEIBO_BASE = 'https://weibo.com'
+BASE_62_KEYS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVTXYZ"
+
 PLAIN_MEDIA_EXTS = ('jpg', 'jpeg', 'png')
 ANIMATED_MEDIA_EXTS = ('gif', 'mp4', 'webm')
 

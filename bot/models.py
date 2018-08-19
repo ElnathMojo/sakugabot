@@ -1,12 +1,44 @@
+from django.conf import settings
 from django.db import models
 
-
 # Create your models here.
+
+from bot.constants import WEIBO_BASE, BASE_62_KEYS
+
 
 class Weibo(models.Model):
     weibo_id = models.CharField(primary_key=True, max_length=255)
     img_url = models.URLField(unique=True)
     create_time = models.DateTimeField(auto_now_add=True)
+    uid = models.ForeignKey('bot.AccessToken', null=True, blank=True, default=None, on_delete=models.SET_DEFAULT)
+
+    @staticmethod
+    def _encode62(n):
+        base = len(BASE_62_KEYS)
+        chs = list()
+        while n > 0:
+            r = n % base
+            n //= base
+            chs.append(BASE_62_KEYS[r])
+        if len(chs) > 0:
+            chs.reverse()
+        else:
+            chs.append(BASE_62_KEYS[0])
+        return ''.join(chs)
+
+    @property
+    def mid(self):
+        mid = str()
+        for code in [self.weibo_id[i - 7 if i - 7 >= 0 else 0:i] for i in range(len(self.weibo_id), 0, -7)]:
+            mid = self._encode62(int(code)) + mid
+        return mid
+
+    @property
+    def weibo_url(self):
+        try:
+            return "{}/{}/{}".format(WEIBO_BASE, self.uid.uid if self.uid else settings.WEIBO_UID, self.mid)
+        except AccessToken.DoesNotExist:
+            return None
 
 
 class Comment(models.Model):
