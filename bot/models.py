@@ -13,7 +13,7 @@ class Weibo(models.Model):
     uid = models.ForeignKey('bot.AccessToken', null=True, blank=True, default=None, on_delete=models.SET_DEFAULT)
 
     @staticmethod
-    def _encode62(n):
+    def _encode62(n, minlen=4):
         base = len(BASE_62_KEYS)
         chs = list()
         while n > 0:
@@ -24,14 +24,16 @@ class Weibo(models.Model):
             chs.reverse()
         else:
             chs.append(BASE_62_KEYS[0])
-        return ''.join(chs)
+        s = ''.join(chs)
+        s = BASE_62_KEYS[0] * max(minlen - len(s), 0) + s
+        return s
 
     @property
     def mid(self):
         mid = str()
         for code in [self.weibo_id[i - 7 if i - 7 >= 0 else 0:i] for i in range(len(self.weibo_id), 0, -7)]:
             mid = self._encode62(int(code)) + mid
-        return mid
+        return mid.lstrip('0')
 
     @property
     def weibo_url(self):
