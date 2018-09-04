@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 from celery import shared_task
 from django.conf import settings
 from django.db import transaction
+from requests import HTTPError
 from rest_framework_simplejwt.token_blacklist.management.commands import flushexpiredtokens
 
 from bot.services.download_service import DownloadService
@@ -174,6 +175,11 @@ def post_weibo(*posts):
             post.weibo = weibo_service.post_weibo(post, media_path)
             post.save()
             logger.info("Post[{}]: Posting Weibo Success. weibo_id[{}]".format(post.id, post.weibo.weibo_id))
+        except HTTPError as e:
+            if '404' in str(e):
+                post.posted = True
+                post.save()
+                continue
         except RuntimeError as e:
             if '[SKIP]' in str(e):
                 post.posted = True
@@ -194,9 +200,12 @@ def post_weibo_task(*post_pks):
 def auto_post_weibo():
     try:
         last_posted_post = Post.objects.filter(posted=True).latest('id')
-        posts = Post.objects.filter(id__gt=last_posted_post.id, posted=False).order_by('id')
+        posts = Post.objects.filter(id__gt=last_posted_post.id,
+                                    posted=False,
+                                    is_shown=True).order_by('id')
     except Post.DoesNotExist:
-        posts = list(reversed(Post.objects.filter(posted=False).order_by('-id')[:20]))
+        posts = list(reversed(Post.objects.filter(posted=False,
+                                                  is_shown=True).order_by('-id')[:20]))
     if not posts:
         logger.info("There's no need to post weibo.")
     post_weibo(*posts)

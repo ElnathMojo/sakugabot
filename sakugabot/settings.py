@@ -168,7 +168,7 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_MAX_SIZE = 100 * 1024 * 1024
+MEDIA_MAX_SIZE = 1024 * 1024 * 1024
 
 BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 BROKER_POOL_LIMIT = 0

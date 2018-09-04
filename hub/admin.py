@@ -69,9 +69,9 @@ class SkippedFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value() == 'skipped':
-            return queryset.filter(Q(posted=True) & Q(weibo__isnull=True))
+            return queryset.filter(Q(posted=True) & Q(weibo__isnull=True) & Q(is_shown=True))
         if self.value() == 'normal':
-            return queryset.filter(~(Q(posted=True) & Q(weibo__isnull=True)))
+            return queryset.filter(~(Q(posted=True) & Q(weibo__isnull=True) & Q(is_shown=True)))
 
 
 @admin.register(Post)

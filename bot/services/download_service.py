@@ -46,6 +46,7 @@ class DownloadService(object):
                 logger.info("Post[{}] media using preview image.".format(post.id))
         logger.info("Post[{}]: Downloading image from sakugabooru.".format(post.id))
         r = self.session.get(media_url, timeout=30)
+        r.raise_for_status()
         with open(path, 'wb') as f:
             f.write(r.content)
         return path
