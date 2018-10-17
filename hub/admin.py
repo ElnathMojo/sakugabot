@@ -46,7 +46,7 @@ class UTF8JSONFormField(JSONField):
     def prepare_value(self, value):
         if isinstance(value, InvalidJSONInput):
             return value
-        return json.dumps(value, ensure_ascii=False)
+        return json.dumps(value, indent=4, ensure_ascii=False)
 
 
 class TagForm(forms.ModelForm):
