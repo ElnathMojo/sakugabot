@@ -1,6 +1,8 @@
 from django.contrib import admin
+from django.contrib.admin.models import DELETION, LogEntry
 from django.db.models import Q
-from django.utils.html import format_html
+from django.urls import reverse
+from django.utils.html import format_html, escape
 from django.utils.translation import gettext_lazy as _
 
 from bot.tasks import update_tags_info_task, update_posts_task, post_weibo_task
@@ -41,9 +43,14 @@ class TagAdmin(admin.ModelAdmin):
     list_filter = ('type', TranslationFilter)
     search_fields = ['name', 'override_name'] + ['_detail__{}'.format(attr.code) for attr in
                                                  Attribute.objects.filter(code__startswith='name')]
-    readonly_fields = ('like_count', 'order_of_keys', 'post_set', '_detail')
+    readonly_fields = ('name', 'like_count', 'order_of_keys', 'post_set', '_detail', 'deletion_flag', 'is_editable')
 
     actions = ['update_info', 'update_info_overwrite']
+
+    def get_readonly_fields(self, request, obj=None):
+        if request.user.is_superuser:
+            return []
+        return self.readonly_fields
 
     def update_info(self, request, queryset):
         update_tags_info_task.delay(*[x.pk for x in queryset], update_tag_type=True)
@@ -114,7 +121,7 @@ class PostAdmin(admin.ModelAdmin):
 @admin.register(TagSnapshot, Node, TagSnapshotNodeRelation)
 class KangKangAdmin(admin.ModelAdmin):
     def default_permission(self, request):
-        if request.user.id <= 3:
+        if request.user.id <= 3 and request.user.is_superuser:
             return True
         return False
 
@@ -148,3 +155,58 @@ class AttributeAdmin(admin.ModelAdmin):
 @admin.register(Uploader)
 class UploaderAdmin(admin.ModelAdmin):
     list_display = ('name', 'override_name')
+
+
+@admin.register(LogEntry)
+class LogEntryAdmin(admin.ModelAdmin):
+    date_hierarchy = 'action_time'
+
+    readonly_fields = [f.name for f in LogEntry._meta.get_fields()]
+
+    list_filter = [
+        'user',
+        'content_type',
+        'action_flag'
+    ]
+
+    search_fields = [
+        'object_repr',
+        'change_message',
+        'user'
+    ]
+
+    list_display = [
+        'action_time',
+        'user',
+        'content_type',
+        'object_link',
+        'action_flag',
+        'change_message',
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser and request.method != 'POST'
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser and request.user.id == 1
+
+    def object_link(self, obj):
+        if obj.action_flag == DELETION:
+            link = escape(obj.object_repr)
+        else:
+            ct = obj.content_type
+            link = format_html(u'<a href="%s">%s</a>' % (
+                reverse('admin:%s_%s_change' % (ct.app_label, ct.model), args=[obj.object_id]),
+                escape(obj.object_repr),
+            ))
+        return link
+
+    object_link.allow_tags = True
+    object_link.admin_order_field = 'object_repr'
+    object_link.short_description = u'object'
+
+    def get_queryset(self, request):
+        return super(LogEntryAdmin, self).get_queryset(request).prefetch_related('content_type')
