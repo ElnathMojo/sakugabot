@@ -2,6 +2,7 @@ import collections
 import json
 from datetime import datetime, date, time
 
+from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField, ArrayField
@@ -176,7 +177,7 @@ class Tag(models.Model):
         return order_of_keys
 
     def refresh_order(self):
-        self.order_of_keys = self.gen_order_of_keys(self.order_of_keys, self._detail.keys())
+        self.order_of_keys = self.gen_order_of_keys(self.order_of_keys, self._detail.keys() if self._detail else [])
 
     @transaction.atomic
     def save(self, *args, **kwargs):
@@ -222,9 +223,18 @@ class Attribute(models.Model):
         DATE: date,
         TIME: time
     }
+    FORM_FIELD_MAP = {
+        INTEGER: forms.IntegerField,
+        FLOAT: forms.FloatField,
+        STRING: forms.CharField,
+        DATETIME: forms.DateTimeField,
+        DATE: forms.DateField,
+        TIME: forms.TimeField
+    }
     type = models.SmallIntegerField(choices=TYPE_CHOICES)
 
     format = models.TextField(null=True, blank=True, default=None)
+    regex = models.CharField(max_length=255, null=True, blank=True, default=None)
     related_types = ArrayField(base_field=models.SmallIntegerField(choices=Tag.TYPE_CHOICES,
                                                                    default=Tag.GENERAL),
                                blank=True)
@@ -233,6 +243,10 @@ class Attribute(models.Model):
     @property
     def type_class(self):
         return self.TYPE_MAPS[self.type]
+
+    @property
+    def form_field_class(self):
+        return self.FORM_FIELD_MAP[self.type]
 
     def serialize_value(self, value):
         if not isinstance(value, self.type_class):
@@ -291,6 +305,8 @@ class TagSnapshot(models.Model):
         nodes = list()
         for i, (key, value) in enumerate(content.items()):
             attribute = Attribute.get_attr_by_code(key)
+            if not attribute:
+                raise AttributeError("Attribute {} does not exist.".format(key))
             try:
                 obj_value = attribute.serialize_value(value)
                 hash_value = hash_it(obj_value)

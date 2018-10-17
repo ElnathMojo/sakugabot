@@ -7,6 +7,7 @@ META_ATTRIBUTES = [
         "type": Attribute.STRING,
         "format": None,
         "related_types": [c[0] for c in Tag.TYPE_CHOICES],
+        "order": 0
     },
     {
         "code": "alias",
@@ -14,6 +15,7 @@ META_ATTRIBUTES = [
         "type": Attribute.STRING,
         "format": None,
         "related_types": [c[0] for c in Tag.TYPE_CHOICES],
+        "order": 12
     },
     {
         "code": "name_zh",
@@ -21,6 +23,7 @@ META_ATTRIBUTES = [
         "type": Attribute.STRING,
         "format": None,
         "related_types": [c[0] for c in Tag.TYPE_CHOICES],
+        "order": 1
     },
     {
         "code": "name_ja",
@@ -28,6 +31,7 @@ META_ATTRIBUTES = [
         "type": Attribute.STRING,
         "format": None,
         "related_types": [c[0] for c in Tag.TYPE_CHOICES],
+        "order": 2
     },
     {
         "code": "name_en",
@@ -35,34 +39,43 @@ META_ATTRIBUTES = [
         "type": Attribute.STRING,
         "format": None,
         "related_types": [c[0] for c in Tag.TYPE_CHOICES],
+        "order": 3
     },
     {
         "code": "wiki_zh",
         "name": "中文维基",
         "type": Attribute.STRING,
         "format": None,
+        "regex": r"^((https?)://)?zh.wikipedia.org/wiki/[^\s]*$",
         "related_types": [Tag.ARTIST, Tag.COPYRIGHT, Tag.TERMINOLOGY],
+        "order": 6
     },
     {
         "code": "wiki_ja",
         "name": "日文维基",
         "type": Attribute.STRING,
         "format": None,
+        "regex": r"^((https?)://)?ja.wikipedia.org/wiki/[^\s]*$",
         "related_types": [Tag.ARTIST, Tag.COPYRIGHT, Tag.TERMINOLOGY],
+        "order": 6
     },
     {
         "code": "wiki_en",
         "name": "英文维基",
         "type": Attribute.STRING,
         "format": None,
+        "regex": r"^((https?)://)?en.wikipedia.org/wiki/[^\s]*$",
         "related_types": [Tag.ARTIST, Tag.COPYRIGHT, Tag.TERMINOLOGY],
+        "order": 6
     },
     {
         "code": "kgs_url",
         "name": "Google Knowledge Graph Search",
         "type": Attribute.STRING,
         "format": None,
+        "regex": r"^((https?)://)?g.co/kg/g/[^\s]*$",
         "related_types": [Tag.ARTIST, Tag.COPYRIGHT, Tag.TERMINOLOGY],
+        "order": 13
     },
     {
         "code": "birth",
@@ -73,6 +86,7 @@ META_ATTRIBUTES = [
         "type": Attribute.DATE,
         "format": None,
         "related_types": [Tag.ARTIST],
+        "order": 7
     },
     {
         "code": "bgm_sid",
@@ -83,6 +97,7 @@ META_ATTRIBUTES = [
         "type": Attribute.INTEGER,
         "format": "http://bgm.tv/subject/{}",
         "related_types": [Tag.COPYRIGHT],
+        "order": 8
     },
     {
         "code": "ann_pid",
@@ -93,6 +108,7 @@ META_ATTRIBUTES = [
         "type": Attribute.INTEGER,
         "format": "https://www.animenewsnetwork.com/encyclopedia/people.php?id={}",
         "related_types": [Tag.ARTIST],
+        "order": 8
     },
     {
         "code": "mal_aid",
@@ -103,6 +119,7 @@ META_ATTRIBUTES = [
         "type": Attribute.INTEGER,
         "format": "https://myanimelist.net/anime/{}/",
         "related_types": [Tag.COPYRIGHT],
+        "order": 8
     },
     {
         "code": "sakuga_wiki_id",
@@ -113,6 +130,7 @@ META_ATTRIBUTES = [
         "type": Attribute.INTEGER,
         "format": "https://www18.atwiki.jp/sakuga/pages/{}.html",
         "related_types": [Tag.ARTIST, Tag.COPYRIGHT],
+        "order": 8
     },
     {
         "code": "anime_wiki_id",
@@ -123,6 +141,7 @@ META_ATTRIBUTES = [
         "type": Attribute.INTEGER,
         "format": "https://www7.atwiki.jp/anime_wiki/pages/{}.html",
         "related_types": [Tag.ARTIST, Tag.COPYRIGHT],
+        "order": 8
     },
     {
         "code": "anime_staff_database_link",
@@ -132,7 +151,9 @@ META_ATTRIBUTES = [
         },
         "type": Attribute.STRING,
         "format": None,
+        "regex": r"^((https?)://)?seesaawiki.jp/w/radioi_34/d/[^\s]*$",
         "related_types": [Tag.COPYRIGHT],
+        "order": 8
     },
     {
         "code": "twitter_id",
@@ -143,6 +164,7 @@ META_ATTRIBUTES = [
         "type": Attribute.STRING,
         "format": "https://twitter.com/{}",
         "related_types": [Tag.ARTIST, Tag.COPYRIGHT],
+        "order": 5
     },
     {
         "code": "blog",
@@ -153,6 +175,7 @@ META_ATTRIBUTES = [
         "type": Attribute.STRING,
         "format": None,
         "related_types": [Tag.ARTIST, Tag.COPYRIGHT],
+        "order": 6
     },
     {
         "code": "description",
@@ -163,5 +186,6 @@ META_ATTRIBUTES = [
         "type": Attribute.STRING,
         "format": None,
         "related_types": [c[0] for c in Tag.TYPE_CHOICES],
+        "order": 4
     }
 ]

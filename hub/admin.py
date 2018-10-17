@@ -1,12 +1,19 @@
+import json
+
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.models import DELETION, LogEntry
+from django.contrib.postgres.forms import JSONField
+from django.contrib.postgres.forms.jsonb import InvalidJSONInput
 from django.db.models import Q
+from django import forms
 from django.urls import reverse
 from django.utils.html import format_html, escape
 from django.utils.translation import gettext_lazy as _
 
 from bot.tasks import update_tags_info_task, update_posts_task, post_weibo_task
 from hub.models import Post, Tag, TagSnapshot, Attribute, Node, TagSnapshotNodeRelation, Uploader
+from hub.validators import TagDetailValidator
 
 
 class TranslationFilter(admin.SimpleListFilter):
@@ -35,17 +42,47 @@ class TranslationFilter(admin.SimpleListFilter):
             return queryset.filter(_detail={}, override_name__isnull=True)
 
 
+class UTF8JSONFormField(JSONField):
+    def prepare_value(self, value):
+        if isinstance(value, InvalidJSONInput):
+            return value
+        return json.dumps(value, ensure_ascii=False)
+
+
+class TagForm(forms.ModelForm):
+    _detail = UTF8JSONFormField()
+
+    def clean__detail(self):
+        data = self.cleaned_data['_detail']
+        if self.instance:
+            return TagDetailValidator(
+                attributes=Attribute.objects.filter(related_types__contains=[self.cleaned_data['type']]))(data)
+        return TagDetailValidator()(data)
+
+
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
+    form = TagForm
     fields = (
-        'name', 'override_name', 'deletion_flag', 'is_editable', '_detail', 'order_of_keys', 'like_count')
+        'name', 'type', 'override_name', 'deletion_flag', 'is_editable', '_detail', 'order_of_keys', 'like_count')
     list_display = ('name', 'type', 'names', 'override_name', 'weibo_name')
     list_filter = ('type', TranslationFilter)
-    search_fields = ['name', 'override_name'] + ['_detail__{}'.format(attr.code) for attr in
-                                                 Attribute.objects.filter(code__startswith='name')]
-    readonly_fields = ('name', 'like_count', 'order_of_keys', 'post_set', '_detail', 'deletion_flag', 'is_editable')
+    search_fields = ['name', 'override_name'] + ['_detail__{}'.format(attr) for attr in
+                                                 ['name_{}'.format(lan) for lan in settings.DEFAULT_LANGUAGES]]
+    readonly_fields = ('name', 'type', 'like_count', 'order_of_keys', 'post_set', '_detail', 'deletion_flag',
+                       'is_editable')
 
     actions = ['update_info', 'update_info_overwrite']
+
+    def save_model(self, request, obj, form, change):
+        obj.save(editor=request.user)
+
+    def get_actions(self, request):
+        actions = super(TagAdmin, self).get_actions(request)
+        if not request.user.is_superuser:
+            for key in self.actions:
+                actions.pop(key, None)
+        return actions
 
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:

@@ -192,6 +192,8 @@ TASK_TIME_LIMIT = 1200
 
 LOGIN_RATE_LIMIT = '10/1h'
 
+DEFAULT_LANGUAGES = ['ja', 'zh', 'en']
+
 LOGGING = {
     'version': 1,
     'formatters': {

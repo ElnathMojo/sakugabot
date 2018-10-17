@@ -4,6 +4,7 @@ from rest_framework.utils import model_meta
 
 from bot.models import Weibo
 from hub.models import Post, Tag, Attribute, TagSnapshot
+from hub.validators import TagDetailValidator
 
 
 class BasicTagSerializer(serializers.ModelSerializer):
@@ -24,18 +25,8 @@ class ModifyTagSerializer(serializers.ModelSerializer):
     detail = serializers.JSONField()
 
     def validate_detail(self, value):
-        for k in value:
-            attr = Attribute.get_attr_by_code(k, self.instance.type)
-            if not attr:
-                raise serializers.ValidationError("Invalid attribute [{}]".format(k))
-            v = value[k]
-            if not v and v != 0:
-                raise serializers.ValidationError("[{}] can't be empty.".format(k))
-            value[k] = attr.deserialize_value(v)
-            if value[k] is None:
-                raise serializers.ValidationError("Unable to parse [{}] to type [{}]".format(v,
-                                                                                             attr.get_type_display()))
-        return value
+        return TagDetailValidator(
+            attributes=Attribute.objects.filter(related_types__contains=[self.instance.type]))(value)
 
     def update(self, instance, validated_data):
         raise_errors_on_nested_writes('update', self, validated_data)
