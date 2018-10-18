@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 from celery import shared_task
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Count
 from requests import HTTPError
 from rest_framework_simplejwt.token_blacklist.management.commands import flushexpiredtokens
 
@@ -14,7 +15,7 @@ from bot.services.info_service import AtwikiInfoService, ASDBCopyrightInfoServic
 from bot.services.media_service import MediaService
 from bot.services.sakugabooru_service import SakugabooruService
 from bot.services.weibo_service import WeiboService
-from hub.models import Post, Tag
+from hub.models import Post, Tag, Node
 
 logger = logging.getLogger('bot.tasks')
 TIME_LIMIT = settings.TASK_TIME_LIMIT
@@ -235,6 +236,12 @@ def clean_media():
             logger.exception("Error occurred while deleting file[{}].".format(fp))
             raise
 
+
+@shared_task(soft_time_limit=TIME_LIMIT)
+def clean_nodes():
+    annotated_nodes = Node.objects.annotate(n_histories=Count('histories'))
+    orphans = annotated_nodes.filter(n_histories=1)
+    orphans.delete()
 
 @shared_task(soft_time_limit=TIME_LIMIT)
 def bot_auto_task():

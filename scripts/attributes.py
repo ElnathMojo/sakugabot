@@ -15,7 +15,7 @@ META_ATTRIBUTES = [
         "type": Attribute.STRING,
         "format": None,
         "related_types": [c[0] for c in Tag.TYPE_CHOICES],
-        "order": 12
+        "order": 4
     },
     {
         "code": "name_zh",
@@ -48,7 +48,7 @@ META_ATTRIBUTES = [
         "format": None,
         "regex": r"^((https?)://)?zh.wikipedia.org/wiki/[^\s]*$",
         "related_types": [Tag.ARTIST, Tag.COPYRIGHT, Tag.TERMINOLOGY],
-        "order": 6
+        "order": 7
     },
     {
         "code": "wiki_ja",
@@ -57,7 +57,7 @@ META_ATTRIBUTES = [
         "format": None,
         "regex": r"^((https?)://)?ja.wikipedia.org/wiki/[^\s]*$",
         "related_types": [Tag.ARTIST, Tag.COPYRIGHT, Tag.TERMINOLOGY],
-        "order": 6
+        "order": 7
     },
     {
         "code": "wiki_en",
@@ -66,7 +66,7 @@ META_ATTRIBUTES = [
         "format": None,
         "regex": r"^((https?)://)?en.wikipedia.org/wiki/[^\s]*$",
         "related_types": [Tag.ARTIST, Tag.COPYRIGHT, Tag.TERMINOLOGY],
-        "order": 6
+        "order": 7
     },
     {
         "code": "kgs_url",
@@ -86,7 +86,7 @@ META_ATTRIBUTES = [
         "type": Attribute.DATE,
         "format": None,
         "related_types": [Tag.ARTIST],
-        "order": 7
+        "order": 5
     },
     {
         "code": "bgm_sid",
@@ -164,7 +164,7 @@ META_ATTRIBUTES = [
         "type": Attribute.STRING,
         "format": "https://twitter.com/{}",
         "related_types": [Tag.ARTIST, Tag.COPYRIGHT],
-        "order": 5
+        "order": 6
     },
     {
         "code": "blog",
@@ -186,6 +186,6 @@ META_ATTRIBUTES = [
         "type": Attribute.STRING,
         "format": None,
         "related_types": [c[0] for c in Tag.TYPE_CHOICES],
-        "order": 4
+        "order": 5
     }
 ]

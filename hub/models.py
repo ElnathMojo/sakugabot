@@ -353,6 +353,8 @@ class TagSnapshot(models.Model):
     class Meta:
         get_latest_by = "update_time"
         indexes = [
+            models.Index(fields=['_user', 'update_time']),
+            models.Index(fields=['update_time']),
             models.Index(fields=['tag', 'update_time']),
             models.Index(fields=['hash'])
         ]
