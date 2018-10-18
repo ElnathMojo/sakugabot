@@ -313,7 +313,7 @@ class TagHistoryAdmin(KangKangAdmin):
 @admin.register(Node)
 class NodeAdmin(KangKangAdmin):
     list_display = ('id', 'attribute', '_value', 'length', 'hash')
-    search_fields = ('id', 'attribute', '_value', 'hash')
+    search_fields = ('id', 'attribute__code', '_value', 'hash')
 
 
 @admin.register(TagSnapshotNodeRelation)
