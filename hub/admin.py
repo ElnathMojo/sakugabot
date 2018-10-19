@@ -31,8 +31,7 @@ class TranslationFilter(admin.SimpleListFilter):
         return (
             ('exists', _('exists')),
             ('not_exists', _('not exists')),
-            ('override_only', _('override only')),
-            ('all_empty', _('all empty'))
+            ('has_override', _('has override name'))
         )
 
     def queryset(self, request, queryset):
@@ -42,10 +41,8 @@ class TranslationFilter(admin.SimpleListFilter):
         if self.value() == 'not_exists':
             return queryset.filter(~(Q(override_name__isnull=False) | Q(_detail__name_zh__isnull=False) | Q(
                 _detail__name_main__isnull=False) | (Q(type=Tag.ARTIST) & Q(_detail__name_ja__isnull=False))))
-        if self.value() == 'override_only':
-            return queryset.filter(_detail={}, override_name__isnull=False)
-        if self.value() == 'all_empty':
-            return queryset.filter(_detail={}, override_name__isnull=True)
+        if self.value() == 'has_override':
+            return queryset.filter(override_name__isnull=False)
 
 
 class UTF8JSONFormField(JSONField):
