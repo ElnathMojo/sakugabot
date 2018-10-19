@@ -50,9 +50,10 @@ class SakugabooruService(object):
         res = self.client.tag_list(name=tag.name)
         for tag_dict in res:
             if tag_dict['name'] == tag.name:
-                tag.type = tag_dict['type']
-                tag.save()
-                logger.info("Tag[{}] updated.".format(tag.name))
+                if tag.type != tag_dict['type']:
+                    tag.type = tag_dict['type']
+                    tag.save()
+                    logger.info("Tag[{}] type has been updated.".format(tag.name))
                 break
         return tag
 

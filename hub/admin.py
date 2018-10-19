@@ -87,7 +87,8 @@ class TagAdmin(admin.ModelAdmin):
     list_display = ('name', 'type', 'names', 'override_name', 'weibo_name')
     list_filter = ('type', TranslationFilter)
     search_fields = ['name', 'override_name'] + ['_detail__{}'.format(attr) for attr in
-                                                 ['name_{}'.format(lan) for lan in settings.DEFAULT_LANGUAGES]]
+                                                 ['name_{}'.format(lan) for lan in settings.DEFAULT_LANGUAGES] + [
+                                                     'name_main']]
     readonly_fields = ('name', 'type', 'like_count', 'override_name')
     actions = ['update_info', 'update_info_overwrite']
 

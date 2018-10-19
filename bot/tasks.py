@@ -230,6 +230,7 @@ def clean_media():
         try:
             os.remove(fp)
             total_size -= size
+            logger.info("File[{}] has been removed.".format(fp))
         except FileNotFoundError:
             total_size -= size
         except OSError:
@@ -240,8 +241,11 @@ def clean_media():
 @shared_task(soft_time_limit=TIME_LIMIT)
 def clean_nodes():
     annotated_nodes = Node.objects.annotate(n_histories=Count('histories'))
-    orphans = annotated_nodes.filter(n_histories=1)
+    orphans = annotated_nodes.filter(n_histories=0)
+    nodes = [{'attribute': node.attribute.code, 'value': node._value} for node in orphans]
     orphans.delete()
+    if nodes:
+        logger.info("Following Nodes have been deleted.: {}".format(nodes))
 
 @shared_task(soft_time_limit=TIME_LIMIT)
 def bot_auto_task():
