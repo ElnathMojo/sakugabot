@@ -5,7 +5,7 @@ from functools import partial
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.models import DELETION, LogEntry
-from django.contrib.admin.utils import flatten_fieldsets
+from django.contrib.admin.utils import flatten_fieldsets, quote
 from django.contrib.postgres.forms import JSONField
 from django.contrib.postgres.forms.jsonb import InvalidJSONInput
 from django.core.exceptions import FieldError
@@ -298,11 +298,26 @@ class KangKangAdmin(admin.ModelAdmin):
         return self.default_permission(request)
 
 
+def object_link(field, short_description=None, admin_order_field=None):
+    def _object_link(obj):
+        field_obj = getattr(obj, field)
+        link = format_html(u'<a href="%s">%s</a>' % (
+            reverse('admin:%s_%s_change' % (field_obj._meta.app_label, field_obj._meta.model_name),
+                    args=[quote(getattr(obj, field).pk)]),
+            escape(getattr(obj, field)),
+        ))
+        return link
+
+    _object_link.admin_order_field = admin_order_field if admin_order_field else field
+    _object_link.short_description = short_description if short_description else field
+    return _object_link
+
+
 @admin.register(TagSnapshot)
 class TagHistoryAdmin(KangKangAdmin):
     date_hierarchy = 'update_time'
 
-    list_display = ('update_time', 'id', 'tag', '_user', 'note', 'hash', 'create_time')
+    list_display = ('update_time', 'id', object_link('tag'), '_user', 'note', 'hash', 'create_time')
     list_filter = (UserFilter,)
     search_fields = ('_user__username', 'tag__name', 'hash')
 
@@ -313,14 +328,14 @@ class TagHistoryAdmin(KangKangAdmin):
 
 @admin.register(Node)
 class NodeAdmin(KangKangAdmin):
-    list_display = ('id', 'attribute', '_value', 'length', 'hash')
+    list_display = ('id', object_link('attribute'), '_value', 'length', 'hash')
     search_fields = ('id', 'attribute__code', '_value', 'hash')
 
 
 @admin.register(TagSnapshotNodeRelation)
 class TagSnapshotNodeRelationAdmin(KangKangAdmin):
     date_hierarchy = 'tag_snapshot__update_time'
-    list_display = ('id', 'tag_snapshot', 'node', 'order')
+    list_display = ('id', object_link('tag_snapshot'), object_link('node'), 'order')
     search_fields = ('tag_snapshot__id', 'node__id')
 
 
@@ -398,12 +413,11 @@ class LogEntryAdmin(admin.ModelAdmin):
         else:
             ct = obj.content_type
             link = format_html(u'<a href="%s">%s</a>' % (
-                reverse('admin:%s_%s_change' % (ct.app_label, ct.model), args=[obj.object_id]),
+                reverse('admin:%s_%s_change' % (ct.app_label, ct.model), args=[quote(obj.object_id)]),
                 escape(obj.object_repr),
             ))
         return link
 
-    object_link.allow_tags = True
     object_link.admin_order_field = 'object_repr'
     object_link.short_description = u'object'
 

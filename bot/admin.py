@@ -9,6 +9,7 @@ from pytz import utc
 
 from bot.models import AccessToken, Weibo
 from bot.services.ultils.weibo import Client
+from hub.admin import object_link
 
 
 @admin.register(AccessToken)
@@ -63,6 +64,5 @@ class AccessTokenAdmin(admin.ModelAdmin):
 
 @admin.register(Weibo)
 class WeiboAdmin(admin.ModelAdmin):
-    list_display = ('weibo_id', 'img_url', 'create_time', 'uid', 'post')
+    list_display = ('weibo_id', 'img_url', 'create_time', object_link('uid'), object_link('post'))
     search_fields = ('weibo_id', 'img_url', 'uid__uid')
-    readonly_fields = ('weibo_id', 'img_url', 'create_time', 'uid', 'post')
