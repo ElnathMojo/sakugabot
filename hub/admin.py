@@ -60,7 +60,6 @@ class TagForm(forms.ModelForm):
                 value = self.instance._detail.get(name.replace('_detail__', ''), None)
                 if value:
                     self.initial[name] = value
-            print("field_name {}".format(name))
 
     def save(self, commit=True):
         for key, value in self.cleaned_data.items():
@@ -298,11 +297,14 @@ class KangKangAdmin(admin.ModelAdmin):
 def object_link(field, short_description=None, admin_order_field=None):
     def _object_link(obj):
         field_obj = getattr(obj, field)
-        link = format_html(u'<a href="%s">%s</a>' % (
-            reverse('admin:%s_%s_change' % (field_obj._meta.app_label, field_obj._meta.model_name),
-                    args=[quote(getattr(obj, field).pk)]),
-            escape(getattr(obj, field)),
-        ))
+        if field_obj:
+            link = format_html(u'<a href="%s">%s</a>' % (
+                reverse('admin:%s_%s_change' % (field_obj._meta.app_label, field_obj._meta.model_name),
+                        args=[quote(getattr(obj, field).pk)]),
+                escape(getattr(obj, field)),
+            ))
+        else:
+            link = escape(field_obj)
         return link
 
     _object_link.admin_order_field = admin_order_field if admin_order_field else field

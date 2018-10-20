@@ -39,7 +39,6 @@ class ShowLog(APIView):
         s = LogViewParamsSerializer(data=request.query_params)
         s.is_valid(raise_exception=True)
         params = s.validated_data
-        print([regex.escape(params['filter'])])
         try:
             output = list()
             with open(os.path.join(settings.BASE_DIR, 'log/{}'.format(params['file'])), 'r') as f:
