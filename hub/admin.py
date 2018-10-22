@@ -86,7 +86,7 @@ class TagAdmin(admin.ModelAdmin):
                                                  ['name_{}'.format(lan) for lan in settings.DEFAULT_LANGUAGES] + [
                                                      'name_main']]
     readonly_fields = ('name', 'type', 'like_count', 'override_name')
-    actions = ['update_info', 'update_info_overwrite']
+    actions = ['update_info', 'update_info_overwrite', 'update_type']
 
     def view_on_site(self, obj):
         url = reverse('api:tag-detail', kwargs={'pk': obj.pk})
@@ -179,7 +179,7 @@ class TagAdmin(admin.ModelAdmin):
     def get_actions(self, request):
         actions = super(TagAdmin, self).get_actions(request)
         if not request.user.is_superuser:
-            for key in self.actions:
+            for key in ['update_info_overwrite', 'update_info']:
                 actions.pop(key, None)
         return actions
 
@@ -189,6 +189,15 @@ class TagAdmin(admin.ModelAdmin):
         if obj is None:
             return ('like_count', 'override_name')
         return self.readonly_fields
+
+    def update_type(self, request, queryset):
+        try:
+            from bot.services.sakugabooru_service import SakugabooruService
+            SakugabooruService().update_tags([tag.name for tag in queryset], force_update=True)
+        finally:
+            pass
+
+    update_type.short_description = _("Update Selected Tags' Type From Sakugabooru")
 
     def update_info(self, request, queryset):
         update_tags_info_task.delay(*[x.pk for x in queryset], update_tag_type=True)
