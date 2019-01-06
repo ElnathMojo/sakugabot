@@ -44,15 +44,15 @@ class MediaService(object):
 
     def gif_make(self, input, output):
         logger.info("Media[{}]: Transcoding media(highQ)".format(input))
-        self._highQ(input, output)
-        if os.path.getsize(output) < self.max_size:
-            return output
         try:
+            self._highQ(input, output)
+            if os.path.getsize(output) < self.max_size:
+                return output
             self.gif_optimize(output)
             if os.path.getsize(output) < self.max_size:
                 return output
         except OSError:
-            logger.exception("Something went wrong when optimizing [{}].".format(output))
+            logger.exception("Something went wrong when transcoding [{}](highQ).".format(input))
 
         os.remove(output)
         logger.info("Media[{}]: Transcoding media(nomQ)".format(input))
