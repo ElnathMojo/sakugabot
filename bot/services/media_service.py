@@ -7,7 +7,7 @@ from moviepy.editor import VideoFileClip
 from retrying import retry
 
 from bot.constants import PALETTE_FILE_NAME, WEIBO_MEDIA_DIR, ANIMATED_MEDIA_EXTS
-from bot.services.ultils.ffmpy3 import FFmpeg
+from bot.services.ultils.ffmpy3 import FFmpeg, FFRuntimeError
 
 logger = logging.getLogger('bot.services.media')
 
@@ -51,7 +51,7 @@ class MediaService(object):
             self.gif_optimize(output)
             if os.path.getsize(output) < self.max_size:
                 return output
-        except OSError:
+        except FFRuntimeError:
             logger.exception("Something went wrong when transcoding [{}](highQ).".format(input))
 
         os.remove(output)
