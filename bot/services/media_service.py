@@ -52,9 +52,11 @@ class MediaService(object):
             if os.path.getsize(output) < self.max_size:
                 return output
         except FFRuntimeError:
-            logger.exception("Something went wrong when transcoding [{}](highQ).".format(input))
-
-        os.remove(output)
+            logger.warning("Something went wrong when transcoding [{}](highQ).".format(input))
+        try:
+            os.remove(output)
+        except FileNotFoundError:
+            pass
         logger.info("Media[{}]: Transcoding media(nomQ)".format(input))
         self._nomQ(input, output)
         if os.path.getsize(output) < self.max_size:
