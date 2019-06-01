@@ -123,6 +123,6 @@ class Client(object):
             res = json.loads(self.session.post(url,
                                                data=kwargs,
                                                files=files,
-                                               timeout=120).text)
+                                               timeout=300).text)
         self._assert_error(res)
         return res
