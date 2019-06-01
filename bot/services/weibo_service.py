@@ -117,7 +117,7 @@ class WeiboService(object):
                     logger.warning("Post id[{}]: {}; Try to Shorten.".format(post.id, str(e)))
                     shorten += 1
                     text = self.generate_weibo_content(post, shorten)
-                elif any(x in str(e) for x in ['20018', '20020', '20021']):
+                elif any(x in str(e) for x in ['20018', '20020', '20021', '20053']):
                     logger.error("Post id[{}]: {}; Skip.".format(post.id, str(e)))
                     raise RuntimeError("[SKIP]")
                 elif any(x in str(e) for x in ['20016', '20017', '20019']):
