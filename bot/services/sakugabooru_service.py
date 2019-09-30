@@ -6,7 +6,7 @@ from pybooru import Moebooru
 from pytz import utc
 
 from bot.constants import SAKUGABOORU_BASE_URL
-from hub.models import Post, Tag
+from hub.models import Post, Tag, Uploader
 
 logger = logging.getLogger("bot.services.sakugabooru")
 
@@ -27,9 +27,8 @@ class SakugabooruService(object):
             defaults={
                 'source': post_dict['source'],
                 'file_size': post_dict['file_size'],
-                'uploader': post_dict['author'],
                 'is_shown': post_dict['is_shown_in_index'],
-                'is_pending': post_dict['is_pending'],
+                'is_pending': post_dict['status'] == "pending",
                 'md5': post_dict['md5'],
                 'ext': post_dict['file_ext'],
                 'created_at': datetime.fromtimestamp(int(post_dict['created_at']), tz=utc),
@@ -43,8 +42,18 @@ class SakugabooruService(object):
             post.tags.clear()
             for tag in tags:
                 post.tags.add(tag)
+        post.uploader = self.update_uploader(post_dict['author'], post.is_pending, post.is_shown)
+        post.save()
         logger.info("Post[{}] updated.".format(post.id))
         return post
+
+    @staticmethod
+    def update_uploader(author, is_pending, is_shown):
+        uploader, created = Uploader.objects.get_or_create(name=author)
+        if is_shown and not (is_pending or uploader.in_whitelist):
+            uploader.in_whitelist = True
+            uploader.save()
+        return uploader
 
     def update_tag(self, tag):
         res = self.client.tag_list(name=tag.name)
