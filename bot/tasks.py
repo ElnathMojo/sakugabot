@@ -1,11 +1,12 @@
 import logging
 import os
+from datetime import timedelta
 from urllib.parse import urlparse
 
 from celery import shared_task
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import Count, Q
 from requests import HTTPError
 from rest_framework_simplejwt.token_blacklist.management.commands import flushexpiredtokens
 
@@ -201,9 +202,12 @@ def post_weibo_task(*post_pks):
 def auto_post_weibo():
     try:
         last_posted_post = Post.objects.filter(posted=True).latest('id')
-        posts = Post.objects.filter(id__gt=last_posted_post.id,
-                                    posted=False,
-                                    is_shown=True).order_by('id')
+
+        posts = Post.objects.filter(
+            created_at__gt=last_posted_post.created_at - timedelta(hours=settings.MAX_PENDING_HOURS),
+            posted=False,
+            is_shown=True).exclude(
+            Q(uploader__in_blacklist=True) | Q(uploader__in_whitelist=False, is_pending=True)).order_by('id')
     except Post.DoesNotExist:
         posts = list(reversed(Post.objects.filter(posted=False,
                                                   is_shown=True).order_by('-id')[:20]))
@@ -246,6 +250,7 @@ def clean_nodes():
     orphans.delete()
     if nodes:
         logger.info("Following Nodes have been deleted.: {}".format(nodes))
+
 
 @shared_task(soft_time_limit=TIME_LIMIT)
 def bot_auto_task():

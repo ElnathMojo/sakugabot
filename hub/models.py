@@ -19,6 +19,14 @@ from sakugabot.settings import NEW_COMMIT_SECONDS
 class Uploader(models.Model):
     name = models.CharField(max_length=255, primary_key=True)
     override_name = models.CharField(max_length=255, default=None, null=True, blank=True)
+    in_whitelist = models.BooleanField(default=False)
+    in_blacklist = models.BooleanField(default=False)
+
+    @property
+    def weibo_name(self):
+        if self.override_name:
+            return self.override_name
+        return self.name
 
 
 class Tag(models.Model):
@@ -402,7 +410,6 @@ class Post(models.Model):
     id = models.IntegerField(primary_key=True)
     source = models.TextField(blank=True, null=True, default=None)
     file_size = models.IntegerField(default=0)
-    uploader = models.CharField(max_length=255)
     is_shown = models.BooleanField(default=True)
     is_pending = models.BooleanField(default=True)
     md5 = models.CharField(max_length=33)
@@ -417,6 +424,8 @@ class Post(models.Model):
 
     posted = models.BooleanField(default=False)
     weibo = models.OneToOneField("bot.Weibo", default=None, null=True, blank=True, on_delete=models.SET_NULL)
+
+    uploader = models.ForeignKey("hub.Uploader", on_delete=models.SET_NULL, default=None, null=True);
 
     update_time = models.DateTimeField(auto_now=True)
 

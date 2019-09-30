@@ -22,6 +22,24 @@ from bot.tasks import update_tags_info_task, update_posts_task, post_weibo_task
 from hub.models import Post, Tag, TagSnapshot, Attribute, Node, TagSnapshotNodeRelation, Uploader
 
 
+def object_link(field, short_description=None, admin_order_field=None):
+    def _object_link(obj):
+        field_obj = getattr(obj, field)
+        if field_obj:
+            link = format_html(u'<a href="%s">%s</a>' % (
+                reverse('admin:%s_%s_change' % (field_obj._meta.app_label, field_obj._meta.model_name),
+                        args=[quote(getattr(obj, field).pk)]),
+                escape(getattr(obj, field)),
+            ))
+        else:
+            link = escape(field_obj)
+        return link
+
+    _object_link.admin_order_field = admin_order_field if admin_order_field else field
+    _object_link.short_description = short_description if short_description else field
+    return _object_link
+
+
 class TranslationFilter(admin.SimpleListFilter):
     title = _('translation')
 
@@ -187,7 +205,7 @@ class TagAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return []
         if obj is None:
-            return ('like_count', 'override_name')
+            return 'like_count', 'override_name'
         return self.readonly_fields
 
     def update_type(self, request, queryset):
@@ -230,11 +248,12 @@ class SkippedFilter(admin.SimpleListFilter):
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('id', 'post_tags', 'source', 'uploader',
+    list_display = ('id', 'post_tags', 'source', object_link('uploader'),
                     'md5', 'ext', 'created_at', 'rating',
                     'weibo_id')
+    raw_id_fields = ("tags", "weibo", "uploader")
     list_filter = ('posted', 'ext', 'rating', SkippedFilter)
-    search_fields = ('id', 'md5', 'uploader')
+    search_fields = ('id', 'md5', 'uploader__name')
 
     actions = ['update_info', 'post_weibo']
 
@@ -256,7 +275,7 @@ class PostAdmin(admin.ModelAdmin):
         except:
             return 'None'
 
-    weibo_id.short_description = 'Weibo'
+    weibo_id.short_description = _('Weibo')
 
     def update_info(self, request, queryset):
         update_posts_task.delay(*[x.pk for x in queryset])
@@ -301,24 +320,6 @@ class KangKangAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return self.default_permission(request)
-
-
-def object_link(field, short_description=None, admin_order_field=None):
-    def _object_link(obj):
-        field_obj = getattr(obj, field)
-        if field_obj:
-            link = format_html(u'<a href="%s">%s</a>' % (
-                reverse('admin:%s_%s_change' % (field_obj._meta.app_label, field_obj._meta.model_name),
-                        args=[quote(getattr(obj, field).pk)]),
-                escape(getattr(obj, field)),
-            ))
-        else:
-            link = escape(field_obj)
-        return link
-
-    _object_link.admin_order_field = admin_order_field if admin_order_field else field
-    _object_link.short_description = short_description if short_description else field
-    return _object_link
 
 
 @admin.register(TagSnapshot)
@@ -375,8 +376,29 @@ class AttributeAdmin(admin.ModelAdmin):
 
 @admin.register(Uploader)
 class UploaderAdmin(admin.ModelAdmin):
-    list_display = ('name', 'override_name')
+    list_display = ('name', 'override_name', 'in_blacklist', 'in_whitelist')
     search_fields = ('name', 'override_name')
+    list_filter = [
+        'in_blacklist',
+        'in_whitelist'
+    ]
+    actions = ['add_to_blacklist', 'remove_from_blacklist', 'refresh_whitelist']
+
+    def add_to_blacklist(self, request, queryset):
+        queryset.update(in_blacklist=True)
+
+    add_to_blacklist.short_description = _("Add to Blacklist")
+
+    def remove_from_blacklist(self, request, queryset):
+        queryset.update(in_blacklist=False)
+
+    remove_from_blacklist.short_description = _("Remove from Blacklist")
+
+    def refresh_whitelist(self, request, queryset):
+        queryset.update(in_whitelist=False)
+        queryset.filter(post__is_pending=False, post__is_shown=True).update(in_whitelist=True)
+
+    refresh_whitelist.short_description = _("Refresh Whitelist")
 
 
 @admin.register(LogEntry)

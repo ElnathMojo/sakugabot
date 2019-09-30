@@ -23,14 +23,6 @@ class WeiboService(object):
             raise RuntimeError("WeiboService init failed. Available AccessToken Doesn't Exist")
 
     @staticmethod
-    def get_post_uploader_name(post):
-        try:
-            uploader = Uploader.objects.get(name=post.uploader)
-            return uploader.override_name
-        except Uploader.DoesNotExist:
-            return post.uploader
-
-    @staticmethod
     def get_post_tags_info(post):
         tags_info = {'copyright': [],
                      'artist': [],
@@ -77,7 +69,7 @@ class WeiboService(object):
 
         for args in [
             (self._single_shorten, 2, '来源', text_dict, post.source),
-            (self._single_shorten, 5, '上传者', text_dict, self.get_post_uploader_name(post)),
+            (self._single_shorten, 5, '上传者', text_dict, post.uploader.weibo_name),
             (self._loop_shorten, 4, 'Tags', text_dict, tags_info['tag']),
             (self._loop_shorten, 1, '作品', text_dict, tags_info['copyright']),
             (self._loop_shorten, 3, '推测原画' if tags_info['is_presumed'] else '原画', text_dict, tags_info['artist']),
@@ -117,7 +109,7 @@ class WeiboService(object):
                     logger.warning("Post id[{}]: {}; Try to Shorten.".format(post.id, str(e)))
                     shorten += 1
                     text = self.generate_weibo_content(post, shorten)
-                elif any(x in str(e) for x in ['20018', '20020', '20021', '20053', '20032']):   # TODO: detect pic url for state 20053 20032
+                elif any(x in str(e) for x in ['20018', '20020', '20021', '20053', '20032']):
                     logger.error("Post id[{}]: {}; Skip.".format(post.id, str(e)))
                     raise RuntimeError("[SKIP]")
                 elif any(x in str(e) for x in ['20016', '20017', '20019']):
