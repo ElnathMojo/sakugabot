@@ -458,7 +458,7 @@ class GoogleKGSInfoService(InfoServiceBase):
         return self.search_url, dict(params={
             "key": settings.GOOGLE_KGRAPH_API_KEY,
             "query": name,
-            "languages": ",".join(self._language_codes),
+            "languages": self._language_codes,
             "limit": self.SEARCH_MAX_NUMBER
         })
 
