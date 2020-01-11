@@ -49,6 +49,7 @@ class TagViewSet(mixins.ListModelMixin,
     serializer_class = serializers.BasicTagSerializer
     permission_classes = [permissions.EditableOrReadOnly, IsAuthenticatedOrReadOnly]
     filterset_class = filters.TagFilter
+    lookup_value_regex = '[^/]+'
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
