@@ -1,4 +1,3 @@
-import json
 from collections import OrderedDict
 from functools import partial
 
@@ -6,8 +5,6 @@ from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.models import DELETION, LogEntry
 from django.contrib.admin.utils import flatten_fieldsets, quote
-from django.contrib.postgres.forms import JSONField
-from django.contrib.postgres.forms.jsonb import InvalidJSONInput
 from django.core.exceptions import FieldError
 from django.core.validators import RegexValidator
 from django.db.models import Q
@@ -61,13 +58,6 @@ class TranslationFilter(admin.SimpleListFilter):
                 _detail__name_main__isnull=False) | (Q(type=Tag.ARTIST) & Q(_detail__name_ja__isnull=False))))
         if self.value() == 'has_override':
             return queryset.filter(override_name__isnull=False)
-
-
-class UTF8JSONFormField(JSONField):
-    def prepare_value(self, value):
-        if isinstance(value, InvalidJSONInput):
-            return value
-        return json.dumps(value, indent=4, ensure_ascii=False)
 
 
 class TagForm(forms.ModelForm):

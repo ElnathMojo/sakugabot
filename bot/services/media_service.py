@@ -7,7 +7,7 @@ from moviepy.editor import VideoFileClip
 from retrying import retry
 
 from bot.constants import PALETTE_FILE_NAME, WEIBO_MEDIA_DIR, ANIMATED_MEDIA_EXTS
-from bot.services.ultils.ffmpy3 import FFmpeg, FFRuntimeError
+from bot.services.utils.ffmpy3 import FFmpeg, FFRuntimeError
 
 logger = logging.getLogger('bot.services.media')
 

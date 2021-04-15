@@ -5,7 +5,7 @@ from django.conf import settings
 
 from bot.constants import SAKUGABOORU_POST
 from bot.models import AccessToken, Weibo
-from bot.services.ultils.weibo import Client
+from bot.services.utils.weibo import Client
 from hub.models import Tag, Uploader
 
 logger = logging.getLogger('bot.services.weibo')

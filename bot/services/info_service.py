@@ -14,7 +14,7 @@ from bot.constants import ATWIKI_SEARCH_URI, ANIMEWIKI_URL_PATTERN, SAKUGAWIKI_U
     SYNONYM_DICT, ANN_URL, ANN_SEARCH_ENDPOINT, ANN_PEOPLE_ENDPOINT, MAL_URL, MAL_SEARCH_ENDPOINT, MAL_ANIME_ENDPOINT, \
     BANGUMI_API_URL, BANGUMI_SEARCH_ENDPOINT, BANGUMI_SUBJECT_ENDPOINT, GOOGLE_KGS_URL, GOOGLE_KGS_SEARCH_ENDPOINT, \
     GOOGLE_KGS_ENTITY_URI
-from bot.services.ultils.decorators import default_if_exception, retry_if_network_error_or_parse_error
+from bot.services.utils.decorators import default_if_exception, retry_if_network_error_or_parse_error
 
 logger = logging.getLogger('bot.services.info')
 

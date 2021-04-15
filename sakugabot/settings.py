@@ -59,9 +59,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ORIGIN_WHITELIST = (
-    'sakugabooru.com',
-    'www.sakugabooru.com',
+CORS_ORIGIN_REGEX_WHITELIST = (
+    r'^https?://(www\.sakugabooru\.com|sakuga\.yshi\.org)',
 )
 CORS_URLS_REGEX = r'^/api/.*$'
 
@@ -232,6 +231,8 @@ LOGGING = {
         }
     },
 }
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 try:
     from .local_settings import *

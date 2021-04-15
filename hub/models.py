@@ -5,8 +5,9 @@ from datetime import datetime, date, time
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import JSONField, ArrayField
+from django.contrib.postgres.fields import ArrayField
 from django.db import models, transaction
+from django.db.models import JSONField
 from django.utils.dateparse import parse_date, parse_time, parse_datetime
 
 from bot.constants import SAKUGABOORU_DATA_URL, SAKUGABOORU_PREVIEW_URL, SAKUGABOORU_PREVIEW_EXT, SAKUGABOORU_POST, \

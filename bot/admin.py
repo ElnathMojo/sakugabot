@@ -8,7 +8,7 @@ from django.urls import path
 from pytz import utc
 
 from bot.models import AccessToken, Weibo
-from bot.services.ultils.weibo import Client
+from bot.services.utils.weibo import Client
 from hub.admin import object_link
 
 
