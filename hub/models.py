@@ -13,7 +13,7 @@ from django.utils.dateparse import parse_date, parse_time, parse_datetime
 from bot.constants import SAKUGABOORU_DATA_URL, SAKUGABOORU_PREVIEW_URL, SAKUGABOORU_PREVIEW_EXT, SAKUGABOORU_POST, \
     ANIMATED_MEDIA_EXTS
 from hub.fields import HashField, hash_it, LengthField
-from hub.ultils.JSONEncoder import DjangoJSONEncoder
+from hub.utils.JSONEncoder import DjangoJSONEncoder
 from sakugabot.settings import NEW_COMMIT_SECONDS
 
 
