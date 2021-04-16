@@ -12,6 +12,7 @@ from django.utils.timezone import now
 from requests import HTTPError
 from rest_framework_simplejwt.token_blacklist.management.commands import flushexpiredtokens
 
+from bot.models import Weibo
 from bot.services.download_service import DownloadService
 from bot.services.info_service import AtwikiInfoService, ASDBCopyrightInfoService, ANNArtistInfoService, \
     GoogleKGSArtistInfoService, MALCopyrightInfoService, BangumiCopyrightInfoService, GoogleKGSCopyrightInfoService
@@ -191,6 +192,8 @@ def post_weibo(*posts):
                 continue
             break
         except:
+            post.posted = True
+            post.save()
             logger.exception("Something went wrong while posting Post[{}].".format(post.id))
             raise
 
@@ -200,8 +203,19 @@ def post_weibo_task(*post_pks):
     post_weibo(*Post.objects.filter(pk__in=post_pks).order_by('id'))
 
 
+def check_status():
+    last_weibo = Weibo.objects.last()
+    fails = Post.objects.filter(id__gt=last_weibo.post.id, posted=True)
+    if len(fails) >= 5:
+        return False
+    return True
+
+
 @shared_task(soft_time_limit=TIME_LIMIT)
 def auto_post_weibo():
+    if not check_status():
+        logger.error("More than 5 fails. Posting has Stopped!")
+        return
     try:
         last_posted_post = Post.objects.filter(posted=True).latest('id')
 
