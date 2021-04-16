@@ -4,9 +4,9 @@ import os
 from django.conf import settings
 
 from bot.constants import SAKUGABOORU_POST
-from bot.models import AccessToken, Weibo
+from bot.models import Weibo, Credential
 from bot.services.utils.weibo import Client
-from hub.models import Tag, Uploader
+from hub.models import Tag
 
 logger = logging.getLogger('bot.services.weibo')
 
@@ -14,12 +14,12 @@ logger = logging.getLogger('bot.services.weibo')
 class WeiboService(object):
     def __init__(self):
         try:
-            self.token = AccessToken.objects.filter(enable=True).order_by('expires_at').last()
+            self.token = Credential.objects.filter(enable=True).order_by('expires_at').last()
             self.client = Client(settings.WEIBO_API_KEY,
                                  settings.WEIBO_API_SECRET,
                                  settings.WEIBO_REDIRECT_URI,
                                  token=self.token.token)
-        except AccessToken.DoesNotExist:
+        except Credential.DoesNotExist:
             raise RuntimeError("WeiboService init failed. Available AccessToken Doesn't Exist")
 
     @staticmethod

@@ -22,3 +22,4 @@ djangorestframework-simplejwt==4.6.0
 django-cors-headers==3.7.0
 django-ratelimit==3.0.1
 rsa==4.7.2
+pycryptodome==3.10.1

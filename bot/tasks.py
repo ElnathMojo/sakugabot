@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 from datetime import timedelta
 from urllib.parse import urlparse
 
@@ -7,6 +8,7 @@ from celery import shared_task
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Count, Q
+from django.utils.timezone import now
 from requests import HTTPError
 from rest_framework_simplejwt.token_blacklist.management.commands import flushexpiredtokens
 
@@ -15,7 +17,7 @@ from bot.services.info_service import AtwikiInfoService, ASDBCopyrightInfoServic
     GoogleKGSArtistInfoService, MALCopyrightInfoService, BangumiCopyrightInfoService, GoogleKGSCopyrightInfoService
 from bot.services.media_service import MediaService
 from bot.services.sakugabooru_service import SakugabooruService
-from bot.services.weibo_service import WeiboService
+from bot.services.weiboV2_service import WeiboService
 from hub.models import Post, Tag, Node
 
 logger = logging.getLogger('bot.tasks')
@@ -213,7 +215,15 @@ def auto_post_weibo():
                                                   is_shown=True).order_by('-id')[:20]))
     if not posts:
         logger.info("There's no need to post weibo.")
-    post_weibo(*posts)
+    post_weibo(*posts[:random.randint(1, 2)])
+
+
+@shared_task()
+def auto_post_weibo_with_random_delay():
+    if random.random() < 0.8:
+        waiting_sec = random.randint(0, 300)
+        logger.info("Try to post weibo in {} seconds.".format(waiting_sec))
+        auto_post_weibo.apply_async(eta=now() + timedelta(seconds=waiting_sec))
 
 
 @shared_task(soft_time_limit=TIME_LIMIT)

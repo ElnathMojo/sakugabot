@@ -11,7 +11,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sakugabot.settings")
 django.setup()
 from scripts.attributes import META_ATTRIBUTES
 from hub.models import Attribute, Tag, Uploader, Post
-from bot.models import AccessToken, Weibo
+from bot.models import Credential, Weibo
 
 
 def init_attributes():
@@ -129,8 +129,9 @@ def import_posts(post_list):
 
 
 def import_token(token_dict):
-    AccessToken.objects.update_or_create(uid=token_dict['uid'],
+    Credential.objects.update_or_create(uid=token_dict['uid'],
                                          defaults={
+                                             'account': token_dict['uid'],
                                              'access_token': token_dict['access_token'],
                                              'expires_at': datetime.fromtimestamp(
                                                  int(token_dict['expires_at']), tz=utc)})
