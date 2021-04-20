@@ -12,6 +12,7 @@ from urllib.parse import urljoin
 import requests
 from Crypto.Cipher import PKCS1_v1_5
 from Crypto.PublicKey import RSA
+from retrying import retry
 
 logger = logging.getLogger('bot.services.utils.WeiboClientV2')
 
@@ -258,6 +259,14 @@ class WeiboClientV2(object):
                 "check_url": "https://unistore.weibo.cn/2/statuses/upload_file?act=check"
             }}
 
+    def _parse_response(self, response):
+        response.raise_for_status()
+        d = response.json()
+        if 'error_code' in d and 'error' in d:
+            raise RuntimeError("{0} {1}".format(
+                d.get("error_code", "") or d.get("errno"), d.get("error", "") or d.get("errmsg", "")))
+        return d
+
     def _common_params(self) -> Dict[str, str]:
         return {
             'c': C,
@@ -286,10 +295,12 @@ class WeiboClientV2(object):
         response = self.session.get(MULTI_DISCOVERY, params=params)
         logger.debug(
             f'Multi discovery renew response: {response.status_code}\n{response.url}\n{response.headers}\n{response.text}')
-        response.raise_for_status()
-        data = response.json()
+        data = self._parse_response(response)
         self.multi_discovery = data
 
+    @retry(stop_max_attempt_number=3,
+           wait_fixed=1000,
+           retry_on_exception=lambda x: isinstance(x, OSError) or '3022401' in str(x))
     def upload_pic(self, file) -> dict:
         """
         上传本地图片
@@ -327,7 +338,7 @@ class WeiboClientV2(object):
         response = self.session.get(self.multi_discovery['image']['init_url'], params=params)
         logger.debug(
             f'Upload init response: {response.status_code}\n{response.url}\n{response.headers}\n{response.text}')
-        res_data = response.json()
+        res_data = self._parse_response(response)
         if 'fileToken' not in res_data:
             log_response_error('Upload init', response)
             raise RuntimeError('Upload init failed')
@@ -360,7 +371,7 @@ class WeiboClientV2(object):
         response = requests.post(upload_url, data=file_data, params=params, headers=headers)
         logger.debug(
             f'Upload send response: {response.status_code}\n{response.url}\n{response.headers}\n{response.text}')
-        res_data = response.json()
+        res_data = self._parse_response(response)
         if 'pic_id' not in res_data:
             log_response_error('Upload send', response)
             raise RuntimeError('Upload send failed')
@@ -407,8 +418,7 @@ class WeiboClientV2(object):
         response = requests.post(STATUSES_SEND, files=multi_part, params=payload)
         logger.debug(
             f'Weibo send response: {response.status_code}\n{response.url}\n{response.headers}\n{response.text}')
-        response.raise_for_status()
-        res_json = response.json()
+        res_json = self._parse_response(response)
         if any(
                 [res_json.get("idstr", None) is None, res_json.get("original_pic", None) is None]
         ):
@@ -420,6 +430,6 @@ class WeiboClientV2(object):
         try:
             self._renew_multi_discovery()
         except Exception as ignore:
-            pass
+            logger.error("Renew Multi Discovery Failed: " + str(ignore), exc_info=True, stack_info=True)
         res = self.upload_pic(pic)
         return self.send_weibo_with_pic(content, res["pic_id"])

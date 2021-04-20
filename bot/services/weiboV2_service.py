@@ -1,6 +1,8 @@
 import logging
 import os
 
+from retrying import retry
+
 from bot.constants import SAKUGABOORU_POST_SAFE as SAKUGABOORU_POST
 from bot.models import Credential
 from bot.models import Weibo
@@ -50,6 +52,9 @@ class WeiboService(object):
         uploader = f"上传者：{post.uploader.weibo_name}；" if post.uploader.weibo_name else ""
         return f"ID：{post.id}；{copyright_}{source}{artist}{tags}{uploader}{url} "
 
+    @retry(stop_max_attempt_number=1,
+           wait_fixed=10000,
+           retry_on_exception=lambda x: '[RETRY]' in str(x))
     def post_weibo(self, post, image_path=None):
         """
 
@@ -74,5 +79,8 @@ class WeiboService(object):
                                             img_url=res['original_pic'],
                                             uid=self.credentials)
             except RuntimeError as e:
+                if '3022401' in str(e):
+                    logger.error("Post id[{}]: {}; Image Upload Failed.".format(post.id, str(e)))
+                    raise RuntimeError("[RETRY]" + str(e))
                 logger.fatal("Post id[{}]: {}; Unknown Error.".format(post.id, str(e)))
-                raise RuntimeError("[SKIP]")
+                raise RuntimeError("[SKIP]" + str(e))

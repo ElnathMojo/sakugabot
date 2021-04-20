@@ -156,7 +156,7 @@ def auto_update_posts():
         last_post = Post.objects.latest('id')
         page = 1
         posts = booru.update_posts_by_page(page=page)
-        while posts[-1].id > last_post.id + 1:
+        while posts[-1].id > last_post.id + 1 or page < 3:
             page += 1
             posts = booru.update_posts_by_page(page=page)
     except Post.DoesNotExist:

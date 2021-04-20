@@ -161,8 +161,11 @@ class SakugabooruService(object):
                         except Post.DoesNotExist:
                             pass
         finally:
+            updated = []
             for v in self.local_cache.values():
                 self._save_post(v)
+                updated.append(str(v['id']))
+            logger.info(f"Posts[{','.join(updated)}] Updated.")
         return Post.objects.filter(id__in=post_ids)
 
     def _save_cache(self, res):
@@ -197,4 +200,5 @@ class SakugabooruService(object):
             post = self._save_post(post_dict)
             if post:
                 posts.append(post)
+        logger.info(f"Posts[{','.join([str(x.id) for x in posts])}] Updated.")
         return posts
