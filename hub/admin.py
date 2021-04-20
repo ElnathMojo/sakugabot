@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from functools import partial
 
+from django import forms
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.models import DELETION, LogEntry
@@ -8,10 +9,9 @@ from django.contrib.admin.utils import flatten_fieldsets, quote
 from django.core.exceptions import FieldError
 from django.core.validators import RegexValidator
 from django.db.models import Q
-from django import forms
 from django.forms import modelform_factory
 from django.forms.models import modelform_defines_fields
-from django.urls import reverse
+from django.urls import reverse, NoReverseMatch
 from django.utils.html import format_html, escape
 from django.utils.translation import gettext_lazy as _
 
@@ -432,10 +432,13 @@ class LogEntryAdmin(admin.ModelAdmin):
             link = escape(obj.object_repr)
         else:
             ct = obj.content_type
-            link = format_html(u'<a href="%s">%s</a>' % (
-                reverse('admin:%s_%s_change' % (ct.app_label, ct.model), args=[quote(obj.object_id)]),
-                escape(obj.object_repr),
-            ))
+            try:
+                link = format_html(u'<a href="%s">%s</a>' % (
+                    reverse('admin:%s_%s_change' % (ct.app_label, ct.model), args=[quote(obj.object_id)]),
+                    escape(obj.object_repr),
+                ))
+            except NoReverseMatch:
+                link = escape(obj.object_repr)
         return link
 
     object_link.admin_order_field = 'object_repr'

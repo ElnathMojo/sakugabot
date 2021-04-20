@@ -23,6 +23,7 @@ from hub.admin import object_link
 
 logger = logging.getLogger('bot.admin')
 
+
 @admin.register(Weibo)
 class WeiboAdmin(admin.ModelAdmin):
     list_display = ('weibo_id', 'img_url', 'create_time', object_link('uid'), object_link('post'))
@@ -148,11 +149,11 @@ class CredentialAdmin(admin.ModelAdmin):
         try:
             weibo.set_code(code)
             ac, dummy = Credential.objects.update_or_create(uid=weibo.uid,
-                                                             defaults={
-                                                                 'account': weibo.uid,
-                                                                 'access_token': weibo.access_token,
-                                                                 'expires_at': datetime.fromtimestamp(
-                                                                     int(weibo.expires_at), tz=utc)})
+                                                            defaults={
+                                                                'account': weibo.uid,
+                                                                'access_token': weibo.access_token,
+                                                                'expires_at': datetime.fromtimestamp(
+                                                                    int(weibo.expires_at), tz=utc)})
 
             return self.change_view(
                 request, ac.pk, ''
