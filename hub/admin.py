@@ -150,11 +150,11 @@ class TagAdmin(admin.ModelAdmin):
             detail_attrs = dict()
             for attr in Attribute.objects.filter(related_types__contains=[obj.type]):
                 widget = forms.Textarea if attr.code == "description" else attr.form_field_class.widget
-                detail_attrs['_detail__%s' % attr.code] = attr.form_field_class(label=attr.name,
+                detail_attrs['_detail__%s' % attr.code] = attr.form_field_class(label=attr.code,
                                                                                 required=False,
                                                                                 widget=widget(attrs={
                                                                                     'class': 'vTextField'}),
-                                                                                help_text=attr.code,
+                                                                                help_text=attr.name,
                                                                                 validators=[
                                                                                     RegexValidator(
                                                                                         attr.regex)] if attr.regex \
