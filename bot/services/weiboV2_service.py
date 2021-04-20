@@ -39,13 +39,16 @@ class WeiboService(object):
             tags_info[tag_type] = "，".join(tags_info[tag_type])
         return tags_info
 
-    def generate_weibo_content(self, post, shorten=0):
+    def generate_weibo_content(self, post):
         tags_info = self.get_post_tags_info(post)
 
         url = "{}{}".format(SAKUGABOORU_POST, post.id)
-        return f"ID：{post.id}；作品：{tags_info['copyright']}；" \
-               f"来源：{post.source}；{tags_info['is_presumed']}：{tags_info['artist']}；" \
-               f"Tags：{tags_info['tag']}；上传者：{post.uploader.weibo_name}；{url} "
+        copyright_ = f"作品：{tags_info['copyright']}；" if tags_info['copyright'] else ""
+        source = f"来源：{post.source}；" if post.source else ""
+        artist = f"{tags_info['is_presumed']}：{tags_info['artist']}；" if tags_info['artist'] else ""
+        tags = f"Tags：{tags_info['tag']}；" if tags_info['tag'] else ""
+        uploader = f"上传者：{post.uploader.weibo_name}；" if post.uploader.weibo_name else ""
+        return f"ID：{post.id}；{copyright_}{source}{artist}{tags}{uploader}{url} "
 
     def post_weibo(self, post, image_path=None):
         """
