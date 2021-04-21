@@ -44,7 +44,6 @@ class SakugabooruService(object):
                 post.tags.add(tag)
         post.uploader = self.update_uploader(post_dict['author'], post.is_pending, post.is_shown)
         post.save()
-        logger.info("Post[{}] updated.".format(post.id))
         return post
 
     @staticmethod
