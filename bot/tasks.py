@@ -205,7 +205,10 @@ def post_weibo_task(*post_pks):
 
 def check_status():
     last_weibo = Weibo.objects.last()
-    fails = Post.objects.filter(id__gt=last_weibo.post.id, posted=True)
+    fails = Post.objects.filter(id__gt=last_weibo.post.id,
+                                update_time__gt=last_weibo.create_time - timedelta(hours=settings.MAX_PENDING_HOURS),
+                                posted=True,
+                                weibo__isnull=True)
     if len(fails) >= 5:
         return False
     return True
