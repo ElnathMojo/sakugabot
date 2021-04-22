@@ -220,8 +220,7 @@ def auto_post_weibo():
         last_posted_post = Post.objects.filter(posted=True).latest('id')
 
         posts = Post.objects.filter(
-            id__gt=last_posted_post.id,
-            created_at__gt=now() - timedelta(hours=settings.MAX_PENDING_HOURS),
+            created_at__gt=last_posted_post.created_at - timedelta(hours=settings.MAX_PENDING_HOURS),
             posted=False,
             is_shown=True).exclude(
             Q(uploader__in_blacklist=True) | Q(uploader__in_whitelist=False, is_pending=True)).order_by('id')
