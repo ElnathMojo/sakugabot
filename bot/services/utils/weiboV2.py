@@ -102,8 +102,16 @@ def generate_cookiejar(cookies):
                         value = value_
                         continue
                     if key == "expires":
-                        expire = unix_time_seconds(
-                            datetime.strptime(value_, "%A, %d-%b-%Y %H:%M:%S GMT").replace(tzinfo=pytz.UTC))
+                        try:
+                            dt = datetime.strptime(value_, "%A, %d-%b-%Y %H:%M:%S GMT").replace(tzinfo=pytz.UTC)
+                            expire = unix_time_seconds(dt)
+                        except ValueError:
+                            try:
+                                dt = datetime.strptime(value_, "%a, %d-%b-%Y %H:%M:%S GMT").replace(tzinfo=pytz.UTC)
+                                expire = unix_time_seconds(dt)
+                            except ValueError:
+                                logger.warniing("Can't parse datetime [{}]".format(value_))
+                                expire = unix_time_seconds() + 100
                         kwargs[key] = expire
                         continue
                     kwargs[key] = value_

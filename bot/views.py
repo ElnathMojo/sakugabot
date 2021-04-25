@@ -27,10 +27,10 @@ class QRCodeSerializer(serializers.Serializer):
         with Image.open(data['file']) as img:
             d = decode(img)
             if not d or len(d) <= 0:
-                raise serializers.ValidationError("Can''t find QR Code in this image.")
+                raise serializers.ValidationError("Can't find QR Code in this image.")
             url = d[0].data.decode()
             if not url:
-                raise serializers.ValidationError("Can''t find QR Code in this image.")
+                raise serializers.ValidationError("Can't find QR Code in this image.")
             data['url'] = url
         return data
 
