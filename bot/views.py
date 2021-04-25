@@ -40,9 +40,6 @@ class ScanQRCode(APIView):
     parser_classes = [FormParser, MultiPartParser]
 
     def post(self, request, format=None):
-        print(request.data)
-        print(request.FILES)
-        print(request.POST)
         s = QRCodeSerializer(data=request.data)
         s.is_valid(raise_exception=True)
         url = s.validated_data.get('url')
@@ -53,20 +50,23 @@ class ScanQRCode(APIView):
         client = WeiboAuthClient(credential.aid)
         try:
             if not cookies:
-                raise CookieExpiredException
+                raise CookieExpiredException()
             client.scan(url, cookies)
             return Response({"msg": "Success!"})
         except CookieExpiredException:
             try:
                 code, res = client.login_with_gsid(credential.uid, credential.gsid)
             except:
-                return Response({"msg": "Failed to update credential"}, status.HTTP_400_BAD_REQUEST)
+                return Response({"msg": "Failed to update credential."}, status.HTTP_400_BAD_REQUEST)
             if code != 0:
-                return Response({"msg": "Failed to update credential"}, status.HTTP_400_BAD_REQUEST)
+                return Response({"msg": "Failed to update credential."}, status.HTTP_400_BAD_REQUEST)
             credential.gsid = res.get("gsid")
             credential.raw_credentials = res
             credential.save()
             cookies = credential.raw_credentials.get("cookie", {}).get("cookie", {})
+        except Exception as e:
+            print(str(e))
+            return Response({"msg": "Failed to scan QR code."}, status.HTTP_400_BAD_REQUEST)
         try:
             client.scan(url, cookies)
             return Response({"msg": "Success!"})
