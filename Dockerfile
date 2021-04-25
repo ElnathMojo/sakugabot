@@ -5,7 +5,7 @@ ENV PYTHONUNBUFFERED 1
 RUN set -x \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
-        ffmpeg
+        ffmpeg libzbar-dev
 
 RUN mkdir /sakugabot
 WORKDIR /sakugabot

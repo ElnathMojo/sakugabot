@@ -6,13 +6,19 @@ import re
 import uuid
 from base64 import b64decode
 from base64 import b64encode
+from datetime import datetime
 from typing import Dict
 from urllib.parse import urljoin
 
+import pytz
 import requests
 from Crypto.Cipher import PKCS1_v1_5
 from Crypto.PublicKey import RSA
+from bs4 import BeautifulSoup
+from requests.cookies import create_cookie, RequestsCookieJar
 from retrying import retry
+
+from bot.services.utils.tools import unix_time_seconds
 
 logger = logging.getLogger('bot.services.utils.WeiboClientV2')
 
@@ -74,6 +80,39 @@ def calculate_s(content, g_from=FROM, g_pin=PIN):
         j += k
         ret += key1_s[j]
     return ret
+
+
+class CookieExpiredException(Exception):
+    pass
+
+
+def generate_cookiejar(cookies):
+    jar = RequestsCookieJar()
+    for domain, content in cookies.items():
+        for line in content.split("\n"):
+            name, value = None, None
+            kwargs = {}
+            for i, record in enumerate(line.split(";")):
+                columns = record.split("=")
+                if len(columns) == 2:
+                    key = columns[0].strip()
+                    value_ = columns[1].strip()
+                    if i == 0:
+                        name = key
+                        value = value_
+                        continue
+                    if key == "expires":
+                        expire = unix_time_seconds(
+                            datetime.strptime(value_, "%A, %d-%b-%Y %H:%M:%S GMT").replace(tzinfo=pytz.UTC))
+                        kwargs[key] = expire
+                        continue
+                    kwargs[key] = value_
+                    continue
+                if len(columns) == 1:
+                    value_ = columns[0].strip()
+                    kwargs["secure"] = value_ == "secure"
+            jar.set_cookie(create_cookie(name, value, **kwargs))
+    return jar
 
 
 class WeiboAuthClient(object):
@@ -222,7 +261,8 @@ class WeiboAuthClient(object):
 
     def login_with_gsid(self, uid, gsid):
         return self._login({
-            "alt": uid,
+            "s": calculate_s(uid),
+            "uid": uid,
             "gsid": gsid,
             "ua": UA
         })
@@ -233,6 +273,26 @@ class WeiboAuthClient(object):
             "gsid": "",
             "ua": UA
         })
+
+    def scan(self, url, raw_cookies):
+        cookies = generate_cookiejar(raw_cookies)
+        now = unix_time_seconds()
+        for cookie in cookies:
+            if cookie.domain in url and cookie.expires <= now:
+                raise CookieExpiredException()
+        print(url)
+        response = self.session.get(url, cookies=cookies)
+        logger.debug(f"Scan Response: {response.status_code}\n{response.url}\n{response.headers}\n{response.text}")
+
+        soup = BeautifulSoup(response.content, "html.parser")
+        data = {}
+        for node in soup.find_all("input", attrs={"type": "hidden"}):
+            data[node["id"]] = node["value"]
+
+        confirm = urljoin(url, "/signin/qrcode/confirm")
+        response = self.session.post(confirm, cookies=cookies, params={"aid": self.aid}, data=data)
+        logger.debug(f"Confirm Response: {response.status_code}\n{response.url}\n{response.headers}\n{response.text}")
+        return response.json()
 
 
 class WeiboClientV2(object):

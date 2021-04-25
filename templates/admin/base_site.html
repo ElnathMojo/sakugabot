@@ -13,7 +13,8 @@
 {% block userlinks %}
     {% if site_url %}
         {% if user.is_superuser %}
-        <a href="{% url 'bot:log' %}">{% trans 'View log' %}</a> /
+            <a href="{% url 'bot:log' %}">{% trans 'View log' %}</a> /
+            <a href="{% url 'bot:scan' %}">{% trans 'Scan QR Code' %}</a> /
         {% endif %}
     {% endif %}
     {% if user.is_active and user.is_staff %}

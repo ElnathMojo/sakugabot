@@ -1,0 +1,18 @@
+{% extends "admin/base_site.html" %}
+{% load rest_framework %}
+{% block content %}
+    <form id="qrcode" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% render_form serializer %}
+        <div class="actions"><input type="submit" name="commit" value="Submit"/></div>
+    </form>
+
+
+    <script>
+        const fileInput = document.querySelector("#qrcode input[name='file']");
+
+        window.addEventListener('paste', e => {
+            fileInput.files = e.clipboardData.files;
+        });
+    </script>
+{% endblock %}
