@@ -1,6 +1,7 @@
 import logging
 import os
 
+import requests
 from retrying import retry
 
 from bot.constants import SAKUGABOORU_POST_SAFE as SAKUGABOORU_POST
@@ -78,6 +79,9 @@ class WeiboService(object):
                 return Weibo.objects.create(weibo_id=res['idstr'],
                                             img_url=res['original_pic'],
                                             uid=self.credentials)
+            except requests.exceptions.ConnectionError as e:
+                logger.error("Post id[{}]: {}; Send Failed.".format(post.id, str(e)))
+                raise RuntimeError("[RETRY]" + str(e))
             except RuntimeError as e:
                 if '3022401' in str(e):
                     logger.error("Post id[{}]: {}; Image Upload Failed.".format(post.id, str(e)))
