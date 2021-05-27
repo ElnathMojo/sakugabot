@@ -330,9 +330,9 @@ class WeiboClientV2(object):
     def _parse_response(self, response):
         response.raise_for_status()
         d = response.json()
-        if 'error_code' in d and 'error' in d:
+        if 'error_code' in d or 'error' in d or 'errno' in d:
             raise RuntimeError("{0} {1}".format(
-                d.get("error_code", "") or d.get("errno"), d.get("error", "") or d.get("errmsg", "")))
+                d.get("error_code", "") or d.get("errno", "Unknown"), d.get("error", "") or d.get("errmsg", "Unknown")))
         return d
 
     def _common_params(self) -> Dict[str, str]:
@@ -490,8 +490,7 @@ class WeiboClientV2(object):
         if any(
                 [res_json.get("idstr", None) is None, res_json.get("original_pic", None) is None]
         ):
-            raise RuntimeError("{0} {1}".format(
-                res_json.get("error_code", ""), res_json.get("error", "")))
+            raise RuntimeError("Unknown Response: {}".format(str(res_json)))
         return response.json()
 
     def share(self, content, pic):
