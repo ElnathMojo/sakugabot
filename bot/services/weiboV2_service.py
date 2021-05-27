@@ -74,17 +74,23 @@ class WeiboService(object):
             raise RuntimeError("[SKIP]")
         text = self.generate_weibo_content(post)
         with open(image_path, 'rb') as pic:
-            try:
-                res = self.client.share(content=text, pic=pic)
-                return Weibo.objects.create(weibo_id=res['idstr'],
-                                            img_url=res['original_pic'],
-                                            uid=self.credentials)
-            except requests.exceptions.ConnectionError as e:
-                logger.error("Post id[{}]: {}; Send Failed.".format(post.id, str(e)))
-                raise RuntimeError("[RETRY]" + str(e))
-            except RuntimeError as e:
-                if '3022401' in str(e):
-                    logger.error("Post id[{}]: {}; Image Upload Failed.".format(post.id, str(e)))
+            for i in range(2):
+                try:
+                    res = self.client.share(content=text, pic=pic)
+                    return Weibo.objects.create(weibo_id=res['idstr'],
+                                                img_url=res['original_pic'],
+                                                uid=self.credentials)
+                except requests.exceptions.ConnectionError as e:
+                    logger.error("Post id[{}]: {}; Failed to Send.".format(post.id, str(e)))
                     raise RuntimeError("[RETRY]" + str(e))
-                logger.fatal("Post id[{}]: {}; Unknown Error.".format(post.id, str(e)))
-                raise RuntimeError("[SKIP]" + str(e))
+                except RuntimeError as e:
+                    if '3022401' in str(e):
+                        logger.error("Post id[{}]: {}; Image Upload Failed.".format(post.id, str(e)))
+                        raise RuntimeError("[RETRY]" + str(e))
+                    if '20018' in str(e):
+                        logger.warning("Post id[{}]: {}; Failed to Send.".format(post.id, str(e)))
+                        text.replace("http://", "")
+                        text.replace("https://", "")
+                        continue
+                    logger.fatal("Post id[{}]: {}; Unknown Error.".format(post.id, str(e)))
+                    raise RuntimeError("[SKIP]" + str(e))
