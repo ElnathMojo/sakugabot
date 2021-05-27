@@ -89,8 +89,8 @@ class WeiboService(object):
                         raise RuntimeError("[RETRY]" + str(e))
                     if '20018' in str(e):
                         logger.warning("Post id[{}]: {}; Failed to Send.".format(post.id, str(e)))
-                        text.replace("http://", "")
-                        text.replace("https://", "")
+                        text = text.replace("http://", "").replace("https://", "")
                         continue
                     logger.fatal("Post id[{}]: {}; Unknown Error.".format(post.id, str(e)))
                     raise RuntimeError("[SKIP]" + str(e))
+            raise RuntimeError("[SKIP]" + str(e))
