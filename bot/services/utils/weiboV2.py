@@ -147,7 +147,7 @@ class WeiboAuthClient(object):
             "checktoken": self.gen_checktoken(uid, did),
             "did": did
         }
-        r = self.session.post(GUEST_LOGIN, data=data)
+        r = self.session.post(GUEST_LOGIN, data=data, timeout=10)
         logger.debug(f'Guest Login Response: {r.text}')
         r.raise_for_status()
         r = r.json()
@@ -176,7 +176,7 @@ class WeiboAuthClient(object):
             "Accept-Language": "en-US",
             "X-Requested-With": "com.sina.weibolite"
         })
-        res = session.get(url)
+        res = session.get(url, timeout=10)
         logger.debug(f"Verify Response: {res.url}\n{res.headers}\n{res.text}")
 
         session.headers.update({
@@ -192,13 +192,13 @@ class WeiboAuthClient(object):
             "number": number,
             "mask_mobile": mask_mobile,
             "msg_type": "sms"
-        })
+        }, timeout=10)
 
         logger.debug(f"Send Response: {res.status_code}\n{res.url}\n{res.headers}\n{res.text}")
 
         check_url = urljoin(res.url, res.json()["data"]["url"])
 
-        res = session.get(check_url)
+        res = session.get(check_url, timeout=10)
         logger.debug(f"Check Response: {res.status_code}\n{res.url}\n{res.headers}\n{res.text}")
 
         return {"url": urljoin(res.url, re.search(r'verifyCodeLogin: {\s*ajaxUrl: "(.*)",', res.text).group(1)),
@@ -217,7 +217,7 @@ class WeiboAuthClient(object):
                                "Accept-Language": "en-US",
                                "X-Requested-With": "com.sina.weibolite",
                                "Referer": info["referer"]
-                           }, cookies=info["cookies"])
+                           }, cookies=info["cookies"], timeout=10)
 
         logger.debug(f"Code Response: {res.status_code}\n{res.url}\n{res.headers}\n{res.text}")
         try:
@@ -238,7 +238,7 @@ class WeiboAuthClient(object):
             "from": FROM
         }
         data.update(params)
-        r = self.session.post(LOGIN, data=data)
+        r = self.session.post(LOGIN, data=data, timeout=10)
         logger.debug(f'Login Response: {r.status_code}\n{r.url}\n{r.headers}\n{r.text}')
         r.raise_for_status()
         r = r.json()
@@ -289,7 +289,7 @@ class WeiboAuthClient(object):
             if cookie.domain in url and cookie.expires <= now:
                 raise CookieExpiredException()
         print(url)
-        response = self.session.get(url, cookies=cookies)
+        response = self.session.get(url, cookies=cookies, timeout=10)
         logger.debug(f"Scan Response: {response.status_code}\n{response.url}\n{response.headers}\n{response.text}")
 
         soup = BeautifulSoup(response.content, "html.parser")
@@ -298,7 +298,7 @@ class WeiboAuthClient(object):
             data[node["id"]] = node["value"]
 
         confirm = urljoin(url, "/signin/qrcode/confirm")
-        response = self.session.post(confirm, cookies=cookies, params={"aid": self.aid}, data=data)
+        response = self.session.post(confirm, cookies=cookies, params={"aid": self.aid}, data=data, timeout=5)
         logger.debug(f"Confirm Response: {response.status_code}\n{response.url}\n{response.headers}\n{response.text}")
         return response.json()
 
@@ -360,7 +360,7 @@ class WeiboClientV2(object):
             'size': '11111',
             'moduleID': 'composer'
         }
-        response = self.session.get(MULTI_DISCOVERY, params=params)
+        response = self.session.get(MULTI_DISCOVERY, params=params, timeout=10)
         logger.debug(
             f'Multi discovery renew response: {response.status_code}\n{response.url}\n{response.headers}\n{response.text}')
         data = self._parse_response(response)
@@ -403,7 +403,7 @@ class WeiboClientV2(object):
                 })
         }
 
-        response = self.session.get(self.multi_discovery['image']['init_url'], params=params)
+        response = self.session.get(self.multi_discovery['image']['init_url'], params=params, timeout=10)
         logger.debug(
             f'Upload init response: {response.status_code}\n{response.url}\n{response.headers}\n{response.text}')
         res_data = self._parse_response(response)
@@ -436,7 +436,7 @@ class WeiboClientV2(object):
         headers = {
             'Content-Type': 'application/octet-stream'
         }
-        response = requests.post(upload_url, data=file_data, params=params, headers=headers)
+        response = requests.post(upload_url, data=file_data, params=params, headers=headers, timeout=100)
         logger.debug(
             f'Upload send response: {response.status_code}\n{response.url}\n{response.headers}\n{response.text}')
         res_data = self._parse_response(response)
@@ -483,7 +483,7 @@ class WeiboClientV2(object):
         }
         payload.pop("status")
 
-        response = requests.post(STATUSES_SEND, files=multi_part, params=payload)
+        response = requests.post(STATUSES_SEND, files=multi_part, params=payload, timeout=30)
         logger.debug(
             f'Weibo send response: {response.status_code}\n{response.url}\n{response.headers}\n{response.text}')
         res_json = self._parse_response(response)
